@@ -1,16 +1,15 @@
-﻿using ClassicUO.Assets;
-using ClassicUO.Game.GameObjects;
+﻿using ClassicUO.Game.UI.Gumps;
+using System.Xml;
+using System.IO;
+using System;
+using ClassicUO.Game.UI.Controls;
+using ClassicUO.Assets;
+using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using ClassicUO.Game.Managers;
 using ClassicUO.Game.Scenes;
-using ClassicUO.Game.UI.Controls;
-using ClassicUO.Game.UI.Gumps;
 using ClassicUO.Renderer;
-using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Xml;
+using ClassicUO.Game.GameObjects;
 using static ClassicUO.Game.UI.XmlGumpHandler;
 
 namespace ClassicUO.Game.UI
@@ -28,8 +27,6 @@ namespace ClassicUO.Game.UI
 
             if (File.Exists(filePath))
             {
-                gump.FilePath = filePath;
-
                 XmlDocument xmlDoc = new XmlDocument();
                 try
                 {
@@ -55,12 +52,6 @@ namespace ClassicUO.Game.UI
                                 if (bool.TryParse(attr.Value, out bool locked))
                                 {
                                     gump.IsLocked = locked;
-                                }
-                                break;
-                            case "saveposition":
-                                if (bool.TryParse(attr.Value, out bool savePos))
-                                {
-                                    gump.SavePosition = savePos;
                                 }
                                 break;
                         }
@@ -222,12 +213,6 @@ namespace ClassicUO.Game.UI
                         if (ushort.TryParse(attr.Value, out ushort fg))
                         {
                             hpBar.ForegroundImage = fg;
-                        }
-                        break;
-                    case "image_foreground_poisoned":
-                        if (ushort.TryParse(attr.Value, out ushort fgp))
-                        {
-                            hpBar.ForegroundImagePoisoned = fgp;
                         }
                         break;
 
@@ -807,21 +792,13 @@ namespace ClassicUO.Game.UI
 
     internal class XmlGump : Gump
     {
-        /// <summary>
-        /// The frequency of UI updates for Xml Gumps for text/progress bar changes. This affects all xml gumps, it is not set individually.
-        /// </summary>
-        public static uint UpdateFrequency { get; set; } = 250;
-
         public List<Tuple<TextBox, Tuple<string, int>>> TextBoxUpdates { get; set; } = new List<Tuple<TextBox, Tuple<string, int>>>();
+
         public List<XmlProgressBarInfo> ProgressBarUpdates { get; set; } = new List<XmlProgressBarInfo>();
+
         public List<XmlProgressBarInfo> VerticalProgressBarUpdates { get; set; } = new List<XmlProgressBarInfo>();
-        public bool SavePosition { get; set; } = false;
-        public string FilePath { get; set; }
 
         private uint nextUpdate = 0;
-
-        private bool savingFile = false;
-        private uint saveFileAfter = uint.MaxValue;
 
         public XmlGump() : base(0, 0)
         {
@@ -890,53 +867,7 @@ namespace ClassicUO.Game.UI
                     }
                 }
 
-                nextUpdate = Time.Ticks + UpdateFrequency;
-            }
-
-            if (Time.Ticks > saveFileAfter)
-            {
-                saveFileAfter = uint.MaxValue;
-                Task.Run(SaveFile);
-            }
-        }
-
-        protected override void OnMove(int x, int y)
-        {
-            base.OnMove(x, y);
-
-            if (SavePosition)
-            {
-                saveFileAfter = Time.Ticks + 10000;
-            }
-        }
-
-        private void SaveFile()
-        {
-            if (!savingFile)
-            {
-                savingFile = true;
-
-                if (!string.IsNullOrEmpty(FilePath) && File.Exists(FilePath))
-                {
-                    XmlDocument xmlDoc = new XmlDocument();
-                    try
-                    {
-                        xmlDoc.LoadXml(File.ReadAllText(FilePath));
-
-                        if (xmlDoc.DocumentElement != null)
-                        {
-                            XmlElement root = xmlDoc.DocumentElement;
-                            root.SetAttribute("x", X.ToString());
-                            root.SetAttribute("y", Y.ToString());
-
-                            xmlDoc.Save(FilePath);
-                        }
-                    }
-                    catch (Exception e) { GameActions.Print(e.Message); }
-
-                }
-
-                savingFile = false;
+                nextUpdate = Time.Ticks + 250;
             }
         }
     }
@@ -948,7 +879,7 @@ namespace ClassicUO.Game.UI
         private GumpPicInPic image_foreground;
         private Mobile mobile;
 
-        private ushort backgroundHue, backgroundImage, foregroundImage, foregroundImagePoisoned = 0;
+        private ushort backgroundHue, backgroundImage, foregroundImage;
 
         public ushort NormalHue = 97;
         public ushort PoisonedHue = 62;
@@ -997,15 +928,6 @@ namespace ClassicUO.Game.UI
             }
         }
 
-        public ushort ForegroundImagePoisoned
-        {
-            get { return foregroundImagePoisoned == 0 ? foregroundImage : foregroundImagePoisoned; }
-            set
-            {
-                foregroundImagePoisoned = value;
-            }
-        }
-
         public XmlHealthBar(uint serial)
         {
             LocalSerial = serial;
@@ -1049,10 +971,6 @@ namespace ClassicUO.Game.UI
                     if (image_foreground != null)
                     {
                         image_foreground.Hue = PoisonedHue;
-                        if (foregroundImagePoisoned != 0)
-                        {
-                            image_foreground.Graphic = foregroundImagePoisoned;
-                        }
                     }
                 }
                 else
@@ -1064,11 +982,6 @@ namespace ClassicUO.Game.UI
                     if (image_foreground != null)
                     {
                         image_foreground.Hue = NormalHue;
-
-                        if (image_foreground.Graphic != foregroundImage)
-                        {
-                            image_foreground.Graphic = foregroundImage;
-                        }
                     }
                 }
 

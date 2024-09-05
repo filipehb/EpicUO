@@ -30,10 +30,11 @@
 
 #endregion
 
+using System;
 using ClassicUO.Input;
+using ClassicUO.Assets;
 using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
-using System;
 
 namespace ClassicUO.Game.UI.Controls
 {
@@ -50,8 +51,6 @@ namespace ClassicUO.Game.UI.Controls
         const ushort BACKGROUND_1 = 256;
         const ushort BACKGROUND_2 = 255;
         const ushort SLIDER = 254;
-
-        private Vector3 hueVector = ShaderHueTranslator.GetHueVector(0);
 
         public ScrollBar(int x, int y, int height)
         {
@@ -91,6 +90,8 @@ namespace ClassicUO.Game.UI.Controls
             {
                 return false;
             }
+
+            var hueVector = ShaderHueTranslator.GetHueVector(0);
 
             ref readonly var gumpInfoUp0 = ref Client.Game.Gumps.GetGump(BUTTON_UP_0);
             ref readonly var gumpInfoUp1 = ref Client.Game.Gumps.GetGump(BUTTON_UP_1);

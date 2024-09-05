@@ -1,13 +1,14 @@
-using ClassicUO.Assets;
-using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Runtime.CompilerServices;
+using ClassicUO.Assets;
+using Microsoft.Xna.Framework.Graphics;
+using static System.Collections.Specialized.BitVector32;
 
 namespace ClassicUO.Renderer.Animations
 {
     public sealed class Animations
     {
-        const int MAX_ANIMATIONS_DATA_INDEX_COUNT = 2048;
+        const int MAX_ANIMATIONS_DATA_INDEX_COUNT = 8192;
 
         private readonly TextureAtlas _atlas;
         private readonly PixelPicker _picker = new PixelPicker();
@@ -44,7 +45,7 @@ namespace ClassicUO.Renderer.Animations
         public AnimationGroupsType GetAnimType(ushort graphic) => _dataIndex[graphic]?.Type ?? 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AnimationFlags GetAnimFlags(ushort graphic) => _dataIndex[graphic]?.Flags ?? 0;
+        public AnimationFlags  GetAnimFlags(ushort graphic) => _dataIndex[graphic]?.Flags ?? 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sbyte GetMountedHeightOffset(ushort graphic) =>
@@ -149,10 +150,10 @@ namespace ClassicUO.Renderer.Animations
                     index = new IndexAnimation();
                     var indices = AnimationsLoader.Instance.GetIndices
                     (
-                        UOFileManager.Version,
-                        id,
+                        UOFileManager.Version, 
+                        id, 
                         ref hue,
-                        ref index.Flags,
+                        ref index.Flags, 
                         out index.FileIndex,
                         out index.Type,
                         out index.MountedHeightOffset
@@ -183,7 +184,7 @@ namespace ClassicUO.Renderer.Animations
                                 {
                                     ref readonly var animIdx = ref indices[i * AnimationsLoader.MAX_DIRECTIONS + d];
                                     index.Groups[i].Direction[d].Address = animIdx.Position;
-                                    index.Groups[i].Direction[d].Size = /*index.FileIndex > 0 ? Math.Max(1, animIdx.Size) :*/ animIdx.Size;
+                                    index.Groups[i].Direction[d].Size = index.FileIndex > 0 ? Math.Max(1, animIdx.Size) : animIdx.Size;
                                 }
                             }
                         }
@@ -204,7 +205,7 @@ namespace ClassicUO.Renderer.Animations
                     }
                 }
             } while (index == null);
-
+           
             useUOP = index.Flags.HasFlag(AnimationFlags.UseUopAnimation);
             index.Hue = hue;
 
@@ -342,8 +343,7 @@ namespace ClassicUO.Renderer.Animations
         public void ConvertBodyIfNeeded(
             ref ushort graphic,
             bool isParent = false,
-            bool forceUOP = false,
-            bool isCorpse = false
+            bool forceUOP = false
         )
         {
             if (graphic >= _dataIndex.Length)
@@ -352,9 +352,7 @@ namespace ClassicUO.Renderer.Animations
             ushort hue = 0;
 
             if (_dataIndex[graphic] != null && _dataIndex[graphic].FileIndex == 0 && !_dataIndex[graphic].Flags.HasFlag(AnimationFlags.UseUopAnimation))
-            {
-                _ = isCorpse ? AnimationsLoader.Instance.ReplaceCorpse(ref graphic, ref hue) : AnimationsLoader.Instance.ReplaceBody(ref graphic, ref hue);
-            }
+                AnimationsLoader.Instance.ReplaceBody(ref graphic, ref hue);
         }
 
         public bool AnimationExists(ushort graphic, byte group, bool isCorpse = false)
@@ -381,7 +379,7 @@ namespace ClassicUO.Renderer.Animations
         {
             public int FileIndex;
             public ushort Hue;
-            public AnimationFlags Flags;
+            public AnimationFlags  Flags;
             public AnimationGroup[] Groups;
             public AnimationGroupUop[] UopGroups;
             public sbyte MountedHeightOffset;

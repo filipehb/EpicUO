@@ -30,14 +30,18 @@
 
 #endregion
 
-using ClassicUO.Assets;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Sockets;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Data;
 using ClassicUO.Game.GameObjects;
 using ClassicUO.Game.Managers;
-using ClassicUO.Game.UI;
+using ClassicUO.Game.UI.Controls;
 using ClassicUO.Game.UI.Gumps;
 using ClassicUO.Input;
+using ClassicUO.Assets;
 using ClassicUO.Network;
 using ClassicUO.Renderer;
 using ClassicUO.Resources;
@@ -46,9 +50,7 @@ using ClassicUO.Utility.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SDL2;
-using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
+using ClassicUO.Game.UI;
 
 namespace ClassicUO.Game.Scenes
 {
@@ -170,7 +172,7 @@ namespace ClassicUO.Game.Scenes
 
             CommandManager.Initialize();
             NetClient.Socket.Disconnected += SocketOnDisconnected;
-            EventSink.MessageReceived += ChatOnMessageReceived;
+            MessageManager.MessageReceived += ChatOnMessageReceived;
             UIManager.ContainerScale = ProfileManager.CurrentProfile.ContainersScale / 100f;
 
             SDL.SDL_SetWindowMinimumSize(Client.Game.Window.Handle, 640, 480);
@@ -196,9 +198,7 @@ namespace ClassicUO.Game.Scenes
 
             CircleOfTransparency.Create(ProfileManager.CurrentProfile.CircleOfTransparencyRadius);
             Plugin.OnConnected();
-            EventSink.InvokeOnConnected(null);
             GameController.UpdateBackgroundHueShader();
-            SpellDefinition.LoadCustomSpells();
             SpellVisualRangeManager.Instance.OnSceneLoad();
             AutoLootManager.Instance.OnSceneLoad();
             if (!UpdateManager.SkipUpdateCheck && UpdateManager.HasUpdate)
@@ -216,7 +216,7 @@ namespace ClassicUO.Game.Scenes
                 };
             }
 
-            foreach (var xml in ProfileManager.CurrentProfile.AutoOpenXmlGumps)
+            foreach(var xml in ProfileManager.CurrentProfile.AutoOpenXmlGumps)
             {
                 XmlGumpHandler.TryAutoOpenByName(xml);
             }
@@ -381,8 +381,6 @@ namespace ClassicUO.Game.Scenes
             }
             catch { }
 
-            EventSink.InvokeOnDisconnected(null);
-
             TargetManager.Reset();
 
             // special case for wmap. this allow us to save settings
@@ -419,7 +417,7 @@ namespace ClassicUO.Game.Scenes
             _useItemQueue = null;
             Hotkeys = null;
             Macros = null;
-            EventSink.MessageReceived -= ChatOnMessageReceived;
+            MessageManager.MessageReceived -= ChatOnMessageReceived;
 
             Settings.GlobalSettings.WindowSize = new Point(
                 Client.Game.Window.ClientBounds.Width,
@@ -845,7 +843,9 @@ namespace ClassicUO.Game.Scenes
             Pathfinder.ProcessAutoWalk();
             DelayedObjectClickManager.Update();
 
-            if (!MoveCharacterByMouseInput() && !currentProfile.DisableArrowBtn && !MoveCharByController())
+            TurnCharacterInPlace();
+
+            if (!MoveCharacterByMouseInput() && !currentProfile.DisableArrowBtn)
             {
                 Direction dir = DirectionHelper.DirectionFromKeyboardArrows(
                     _flags[0],
@@ -874,10 +874,7 @@ namespace ClassicUO.Game.Scenes
                     }
                     else if (distance > currentProfile.AutoFollowDistance)
                     {
-                        if (!Pathfinder.WalkTo(follow.X, follow.Y, follow.Z, currentProfile.AutoFollowDistance) && !World.Player.IsParalyzed)
-                        {
-                            StopFollowing(); //Can't get there
-                        }
+                        Pathfinder.WalkTo(follow.X, follow.Y, follow.Z, currentProfile.AutoFollowDistance);
                     }
                 }
                 else
@@ -1146,7 +1143,15 @@ namespace ClassicUO.Game.Scenes
             }
             else
             {
-                batcher.SetSampler(SamplerState.PointClamp);
+                if(ProfileManager.CurrentProfile.Sampler)
+                {
+                    batcher.SetSampler(SamplerState.AnisotropicClamp);
+                }
+                else
+                {
+                    batcher.SetSampler(SamplerState.PointClamp);
+                }
+               
             }
 
             batcher.Begin(null, matrix);

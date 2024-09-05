@@ -32,8 +32,8 @@
 
 using ClassicUO.Configuration;
 using ClassicUO.Game;
-using ClassicUO.Game.Managers;
 using ClassicUO.IO;
+using ClassicUO.Game.Managers;
 using ClassicUO.Network;
 using ClassicUO.Resources;
 using ClassicUO.Utility;
@@ -57,7 +57,7 @@ namespace ClassicUO
         public static void Main(string[] args)
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            Language.Load();
+
 #if !NETFRAMEWORK
             DllMap.Initialise();
 #endif
@@ -66,12 +66,6 @@ namespace ClassicUO
 
             CUOEnviroment.GameThread = Thread.CurrentThread;
             CUOEnviroment.GameThread.Name = "CUO_MAIN_THREAD";
-
-#if DEBUG
-            ScriptCompiler.Compile(true, true);
-#else
-            ScriptCompiler.Compile(false, true);
-#endif
 
 #if !DEBUG
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
@@ -279,8 +273,8 @@ namespace ClassicUO
                         break;
                 }
 
-                Client.Run();
 
+                Client.Run();
             }
 
             Log.Trace("Closing...");

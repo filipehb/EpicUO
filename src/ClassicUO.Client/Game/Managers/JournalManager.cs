@@ -40,15 +40,20 @@ using ClassicUO.Utility.Logging;
 
 namespace ClassicUO.Game.Managers
 {
-    public class JournalManager
+    internal class JournalManager
     {
         private StreamWriter _fileWriter;
         private bool _writerHasException;
 
         public static Deque<JournalEntry> Entries { get; } = new Deque<JournalEntry>(Constants.MAX_JOURNAL_HISTORY_COUNT);
 
+        public event EventHandler<JournalEntry> EntryAdded;
+
         public void Add(string text, ushort hue, string name, TextType type, bool isunicode = true, MessageType messageType = MessageType.Regular)
         {
+            if (messageType == MessageType.New)
+                return;
+            
             JournalEntry entry = Entries.Count >= Constants.MAX_JOURNAL_HISTORY_COUNT ? Entries.RemoveFromFront() : new JournalEntry();
 
             byte font = (byte) (isunicode ? 0 : 9);
@@ -77,7 +82,7 @@ namespace ClassicUO.Game.Managers
             }
 
             Entries.AddToBack(entry);
-            EventSink.InvokeJournalEntryAdded(null, entry);
+            EntryAdded.Raise(entry);
 
             if (_fileWriter == null && !_writerHasException)
             {
@@ -145,7 +150,7 @@ namespace ClassicUO.Game.Managers
         }
     }
 
-    public class JournalEntry
+    internal class JournalEntry
     {
         public byte Font;
         public ushort Hue;

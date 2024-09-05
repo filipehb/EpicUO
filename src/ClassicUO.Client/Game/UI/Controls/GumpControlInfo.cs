@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public enum UILayer
+    internal enum UILayer
     {
         Over,
         Default,

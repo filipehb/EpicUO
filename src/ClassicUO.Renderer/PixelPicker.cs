@@ -10,33 +10,23 @@ namespace ClassicUO.Renderer
         Dictionary<ulong, int> m_IDs = new Dictionary<ulong, int>();
         readonly List<byte> m_Data = new List<byte>(InitialDataCount); // list<t> access is 10% slower than t[].
 
-        public bool Get(ulong textureID, int x, int y, int extraRange = 0, double scale = 1f)
+        public bool Get(ulong textureID, int x, int y, int extraRange = 0)
         {
             int index;
             if (!m_IDs.TryGetValue(textureID, out index))
             {
                 return false;
             }
-
-            if (scale != 1f)
-            {
-                x = (int)(x / scale);
-                y = (int)(y / scale);
-            }
-
             int width = ReadIntegerFromData(ref index);
-
-
             if (x < 0 || x >= width)
             {
                 return false;
             }
-
-            if (y < 0 || y >= ReadIntegerFromData(ref index))
+            int height = ReadIntegerFromData(ref index);
+            if (y < 0 || y >= height)
             {
                 return false;
             }
-
             int current = 0;
             int target = x + y * width;
             bool inTransparentSpan = true;
@@ -140,6 +130,40 @@ namespace ClassicUO.Renderer
                 }
                 shift += 7;
             }
+        }
+
+        public void GetValidCenterX(ushort graphic, out int x)
+        {
+            int index;
+            if (!m_IDs.TryGetValue(graphic, out index))
+            {
+                x = 0;
+                return;
+            }
+            int width = ReadIntegerFromData(ref index);
+            int height = ReadIntegerFromData(ref index);
+            int current = 0;
+            int max = width + (height >> 1) * width;
+            int curx = max;
+            bool inTransparentSpan = true;
+            while (current < max)
+            {
+                int spanLength = ReadIntegerFromData(ref index);
+                current += spanLength;
+                if (!inTransparentSpan)
+                {
+                    int x1 = current % width;
+                    if (x1 < curx)
+                    {
+                        curx = x1;
+                    }
+                }
+                inTransparentSpan = false;
+            }
+            if (curx != max)
+                x = curx;
+            else
+                x = 0;
         }
     }
 }

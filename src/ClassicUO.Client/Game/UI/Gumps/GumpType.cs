@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.UI.Gumps
 {
-    public enum GumpType
+    internal enum GumpType
     {
         None,
 
@@ -40,6 +40,7 @@ namespace ClassicUO.Game.UI.Gumps
         Container,
         CounterBar,
         HealthBar,
+        TabGridGump,
         InfoBar,
         Journal,
         MacroButton,

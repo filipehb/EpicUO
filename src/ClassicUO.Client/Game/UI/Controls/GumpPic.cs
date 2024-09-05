@@ -39,7 +39,7 @@ using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public abstract class GumpPicBase : Control
+    internal abstract class GumpPicBase : Control
     {
         private ushort _graphic;
 
@@ -81,7 +81,7 @@ namespace ClassicUO.Game.UI.Controls
                 return false;
             }
 
-            if (Client.Game.Gumps.PixelCheck(Graphic, x - Offset.X, y - Offset.Y, InternalScale))
+            if (Client.Game.Gumps.PixelCheck(Graphic, x - Offset.X, y - Offset.Y))
             {
                 return true;
             }
@@ -178,7 +178,7 @@ namespace ClassicUO.Game.UI.Controls
             {
                 batcher.Draw(
                     gumpInfo.Texture,
-                    new Rectangle(x, y, (int)(Width * Scale), (int)(Height * Scale)),
+                    new Rectangle(x, y, Width, Height),
                     gumpInfo.UV,
                     hueVector
                 );
@@ -257,7 +257,7 @@ namespace ClassicUO.Game.UI.Controls
             {
                 batcher.Draw(
                     gumpInfo.Texture,
-                    new Rectangle((int)(x + DrawOffset.X), (int)(y + DrawOffset.Y), (int)(Width * Scale), (int)(Height * Scale)),
+                    new Rectangle((int)(x + DrawOffset.X), (int)(y + DrawOffset.Y), Width, Height),
                     sourceBounds,
                     hueVector
                 );

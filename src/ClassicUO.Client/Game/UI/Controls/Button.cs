@@ -30,31 +30,32 @@
 
 #endregion
 
+using System.Collections.Generic;
 using ClassicUO.Game.Scenes;
 using ClassicUO.Input;
+using ClassicUO.Assets;
 using ClassicUO.Renderer;
 using ClassicUO.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public enum ButtonAction
+    internal enum ButtonAction
     {
         Default = 0,
         SwitchPage = 0,
         Activate = 1
     }
 
-    public class Button : Control
+    internal class Button : Control
     {
         private readonly string _caption;
         private bool _entered;
         private readonly RenderedText[] _fontTexture;
-        private ushort _normal, _pressed, _over;
-        private Vector3 hueVector;
-        private int hue;
+        private ushort _normal,
+            _pressed,
+            _over;
 
         public Button(
             int buttonID,
@@ -102,9 +103,8 @@ namespace ClassicUO.Game.UI.Controls
 
             CanMove = false;
             AcceptMouseInput = true;
+            //CanCloseWithRightClick = false;
             CanCloseWithEsc = false;
-
-            hueVector = ShaderHueTranslator.GetHueVector(Hue, false, Alpha, true);
         }
 
         public Button(List<string> parts)
@@ -182,15 +182,7 @@ namespace ClassicUO.Game.UI.Controls
             }
         }
 
-        public int Hue
-        {
-            get => hue; set
-            {
-                hue = value;
-                hueVector = ShaderHueTranslator.GetHueVector(Hue, false, Alpha, true);
-
-            }
-        }
+        public int Hue { get; set; }
         public ushort FontHue { get; }
 
         public ushort HueHover { get; }
@@ -207,12 +199,6 @@ namespace ClassicUO.Game.UI.Controls
         protected override void OnMouseExit(int x, int y)
         {
             _entered = false;
-        }
-
-        public override void AlphaChanged(float oldValue, float newValue)
-        {
-            base.AlphaChanged(oldValue, newValue);
-            hueVector = ShaderHueTranslator.GetHueVector(Hue, false, Alpha, true);
         }
 
         public override bool Draw(UltimaBatcher2D batcher, int x, int y)
@@ -249,7 +235,9 @@ namespace ClassicUO.Game.UI.Controls
                 return false;
             }
 
-            batcher.Draw(texture, new Rectangle(x, y, Width, Height), bounds, hueVector);
+            var hue = ShaderHueTranslator.GetHueVector(Hue, false, Alpha, true);
+
+            batcher.Draw(texture, new Rectangle(x, y, Width, Height), bounds, hue);
 
             if (!string.IsNullOrEmpty(_caption))
             {
@@ -323,7 +311,7 @@ namespace ClassicUO.Game.UI.Controls
 
             return ContainsByBounds
                 ? base.Contains(x, y)
-                : Client.Game.Gumps.PixelCheck(_normal, x - Offset.X, y - Offset.Y, InternalScale);
+                : Client.Game.Gumps.PixelCheck(_normal, x - Offset.X, y - Offset.Y);
         }
 
         public sealed override void Dispose()

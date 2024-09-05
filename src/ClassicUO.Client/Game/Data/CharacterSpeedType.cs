@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.Data
 {
-    public enum CharacterSpeedType
+    internal enum CharacterSpeedType
     {
         Normal,
         FastUnmount,

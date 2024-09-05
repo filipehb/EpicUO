@@ -36,7 +36,7 @@ using ClassicUO.Renderer;
 
 namespace ClassicUO.Game.UI.Gumps
 {
-    public abstract class TextContainerGump : Gump
+    internal abstract class TextContainerGump : Gump
     {
         protected TextContainerGump(uint local, uint server) : base(local, server)
         {

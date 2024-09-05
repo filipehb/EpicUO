@@ -63,7 +63,8 @@ namespace ClassicUO
         private readonly Texture2D[] _hueSamplers = new Texture2D[3];
         private bool _ignoreNextTextInput;
         private readonly float[] _intervalFixedUpdate = new float[2];
-        private double _totalElapsed, _currentFpsTime, _nextSlowUpdate;
+        private double _totalElapsed,
+            _currentFpsTime;
         private uint _totalFrames;
         private UltimaBatcher2D _uoSpriteBatch;
         private bool _suppressedDraw;
@@ -86,7 +87,7 @@ namespace ClassicUO
 
             Window.ClientSizeChanged += WindowOnClientSizeChanged;
             Window.AllowUserResizing = true;
-            Window.Title = $"TazUO - {CUOEnviroment.Version}";
+            Window.Title = $"ZanUO - {CUOEnviroment.Version}";
             IsMouseVisible = Settings.GlobalSettings.RunMouseInASeparateThread;
 
             IsFixedTimeStep = false; // Settings.GlobalSettings.FixedTimeStep;
@@ -188,7 +189,6 @@ namespace ClassicUO
             Fonts.Initialize(GraphicsDevice);
             SolidColorTextureCache.Initialize(GraphicsDevice);
             PNGLoader.Instance.GraphicsDevice = GraphicsDevice;
-            System.Threading.Tasks.Task loadResourceAssets = PNGLoader.Instance.LoadResourceAssets();
 
             Animations = new Renderer.Animations.Animations(GraphicsDevice);
             Arts = new Renderer.Arts.Art(GraphicsDevice);
@@ -207,8 +207,6 @@ namespace ClassicUO
             var bytes = Loader.GetBackgroundImage().ToArray();
             using var ms = new MemoryStream(bytes);
             _background = Texture2D.FromStream(GraphicsDevice, ms);
-
-            loadResourceAssets.Wait(10000);
 
             SetScene(new LoginScene());
             SetWindowPositionBySettings();
@@ -257,7 +255,7 @@ namespace ClassicUO
 #if DEV_BUILD
                 Window.Title = $"ClassicUO [dev] - {CUOEnviroment.Version}";
 #else
-                Window.Title = $"[TazUO {CUOEnviroment.Version}]";
+                Window.Title = $"[ZanUO {CUOEnviroment.Version}]";
 #endif
             }
             else
@@ -265,7 +263,7 @@ namespace ClassicUO
 #if DEV_BUILD
                 Window.Title = $"{title} - ClassicUO [dev] - {CUOEnviroment.Version}";
 #else
-                Window.Title = $"{title} - [TazUO {CUOEnviroment.Version}]";
+                Window.Title = $"{title} - [ZanUO {CUOEnviroment.Version}]";
 #endif
             }
         }
@@ -452,22 +450,12 @@ namespace ClassicUO
 
             if (Scene != null && Scene.IsLoaded && !Scene.IsDestroyed)
             {
-                if (EventSink.GameUpdate != null)
-                {
-                    EventSink.GameUpdate();
-                }
                 Profiler.EnterContext("Update");
                 Scene.Update();
                 Profiler.ExitContext("Update");
             }
 
             UIManager.Update();
-
-            if (Time.Ticks >= _nextSlowUpdate)
-            {
-                _nextSlowUpdate = Time.Ticks + 500;
-                UIManager.SlowUpdate();
-            }
 
             _totalElapsed += gameTime.ElapsedGameTime.TotalMilliseconds;
             _currentFpsTime += gameTime.ElapsedGameTime.TotalMilliseconds;
@@ -937,10 +925,6 @@ namespace ClassicUO
                     }
 
                 case SDL_EventType.SDL_CONTROLLERBUTTONDOWN:
-                    if (!IsActive)
-                    {
-                        break;
-                    }
                     Controller.OnButtonDown(sdlEvent->cbutton);
                     UIManager.KeyboardFocusControl?.InvokeControllerButtonDown((SDL_GameControllerButton)sdlEvent->cbutton.button);
                     Scene.OnControllerButtonDown(sdlEvent->cbutton);
@@ -962,11 +946,10 @@ namespace ClassicUO
                     else if (sdlEvent->cbutton.button == (byte)SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START && World.InGame)
                     {
                         Gump g = UIManager.GetGump<ModernOptionsGump>();
-                        if (g == null)
+                        if(g == null)
                         {
                             UIManager.Add(new ModernOptionsGump());
-                        }
-                        else
+                        } else
                         {
                             g.Dispose();
                         }
@@ -974,10 +957,6 @@ namespace ClassicUO
                     break;
 
                 case SDL_EventType.SDL_CONTROLLERBUTTONUP:
-                    if (!IsActive)
-                    {
-                        break;
-                    }
                     Controller.OnButtonUp(sdlEvent->cbutton);
                     UIManager.KeyboardFocusControl?.InvokeControllerButtonUp((SDL_GameControllerButton)sdlEvent->cbutton.button);
                     Scene.OnControllerButtonUp(sdlEvent->cbutton);
@@ -999,11 +978,7 @@ namespace ClassicUO
                     break;
 
                 case SDL_EventType.SDL_CONTROLLERAXISMOTION: //Work around because sdl doesn't see trigger buttons as buttons, they are axis probably for pressure support
-                                                             //GameActions.Print(typeof(SDL_GameControllerButton).GetEnumName((SDL_GameControllerButton)sdlEvent->cbutton.button));
-                    if (!IsActive)
-                    {
-                        break;
-                    }
+                    //GameActions.Print(typeof(SDL_GameControllerButton).GetEnumName((SDL_GameControllerButton)sdlEvent->cbutton.button));
                     if (sdlEvent->cbutton.button == (byte)SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK || sdlEvent->cbutton.button == (byte)SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE) //Left trigger BACK Right trigger GUIDE
                     {
                         if (sdlEvent->caxis.axisValue > 32000)

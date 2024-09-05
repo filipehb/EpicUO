@@ -30,12 +30,13 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Managers;
 using ClassicUO.Game.UI.Controls;
+using ClassicUO.Resources;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
 
 namespace ClassicUO.Game.UI.Gumps
 {
@@ -47,6 +48,7 @@ namespace ClassicUO.Game.UI.Gumps
 
         private readonly List<RadioButton> _overheadButtons = new List<RadioButton>();
         private Control _alpha;
+        private readonly Checkbox _keepOpenCheckbox;
         private StbTextBox searchBox;
 
         public NameOverHeadHandlerGump() : base(0, 0)
@@ -145,6 +147,10 @@ namespace ClassicUO.Game.UI.Gumps
             foreach (var button in _overheadButtons)
             {
                 button.IsChecked = NameOverHeadManager.LastActiveNameOverheadOption == button.Text;
+            }
+            if (_keepOpenCheckbox != null)
+            {
+                _keepOpenCheckbox.IsChecked = NameOverHeadManager.IsPermaToggled;
             }
         }
 

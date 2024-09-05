@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.Data
 {
-    public enum GraphicEffectType
+    internal enum GraphicEffectType
     {
         Moving = 0x00,
         Lightning = 0x01,

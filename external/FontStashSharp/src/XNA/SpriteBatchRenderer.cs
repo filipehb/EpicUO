@@ -13,14 +13,14 @@ using Texture2D = Stride.Graphics.Texture;
 
 namespace FontStashSharp
 {
-    internal class SpriteBatchRenderer : IFontStashRenderer
-    {
-        public static readonly SpriteBatchRenderer Instance = new SpriteBatchRenderer();
+	internal class SpriteBatchRenderer : IFontStashRenderer
+	{
+		public static readonly SpriteBatchRenderer Instance = new SpriteBatchRenderer();
 
-        private SpriteBatch _batch;
+		private SpriteBatch _batch;
 
 #if MONOGAME || FNA
-        public GraphicsDevice GraphicsDevice => _batch.GraphicsDevice;
+		public GraphicsDevice GraphicsDevice => _batch.GraphicsDevice;
 #elif STRIDE
 		private GraphicsDevice _graphicsDevice;
 		public GraphicsDevice GraphicsDevice
@@ -43,48 +43,48 @@ namespace FontStashSharp
 		}
 #endif
 
-        public SpriteBatch Batch
-        {
-            get
-            {
-                return _batch;
-            }
+		public SpriteBatch Batch
+		{
+			get
+			{
+				return _batch;
+			}
 
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException(nameof(value));
+				}
 
-                if (value == _batch)
-                {
-                    return;
-                }
+				if (value == _batch)
+				{
+					return;
+				}
 
-                _batch = value;
+				_batch = value;
 #if STRIDE
 				_graphicsDevice = null;
 #endif
-            }
-        }
+			}
+		}
 
-        private SpriteBatchRenderer()
-        {
-        }
+		private SpriteBatchRenderer()
+		{
+		}
 
-        public void Draw(Texture2D texture, Vector2 position, Rectangle? sourceRectangle, Color color, float rotation, Vector2 scale, float depth)
-        {
+		public void Draw(Texture2D texture, Vector2 position, Rectangle? sourceRectangle, Color color, float rotation, Vector2 scale, float depth)
+		{
 #if MONOGAME || FNA
-            _batch.Draw(texture,
-                position,
-                sourceRectangle,
-                color,
-                rotation,
-                Vector2.Zero,
-                scale,
-                SpriteEffects.None,
-                depth);
+			_batch.Draw(texture,
+				position,
+				sourceRectangle,
+				color,
+				rotation,
+				Vector2.Zero,
+				scale,
+				SpriteEffects.None,
+				depth);
 #elif STRIDE
 			_batch.Draw(texture,
 				position,
@@ -97,6 +97,6 @@ namespace FontStashSharp
 				ImageOrientation.AsIs,
 				depth);
 #endif
-        }
-    }
+		}
+	}
 }

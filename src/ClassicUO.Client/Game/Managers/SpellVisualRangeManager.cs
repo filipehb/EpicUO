@@ -105,12 +105,12 @@ namespace ClassicUO.Game.Managers
         #region Load and unload
         public void OnSceneLoad()
         {
-            EventSink.RawMessageReceived += OnRawMessageReceived;
+            MessageManager.RawMessageReceived += OnRawMessageReceived;
         }
 
         public void OnSceneUnload()
         {
-            EventSink.RawMessageReceived -= OnRawMessageReceived;
+            MessageManager.RawMessageReceived -= OnRawMessageReceived;
             instance = null;
         }
         #endregion

@@ -48,7 +48,7 @@ using ClassicUO.Assets;
 
 namespace ClassicUO.Game
 {
-    public static class World
+    internal static class World
     {
         private static readonly EffectManager _effectManager = new EffectManager();
         private static readonly List<uint> _toRemove = new List<uint>();

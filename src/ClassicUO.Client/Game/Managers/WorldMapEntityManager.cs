@@ -41,7 +41,7 @@ using ClassicUO.Utility.Logging;
 
 namespace ClassicUO.Game.Managers
 {
-    public class WMapEntity
+    internal class WMapEntity
     {
         public WMapEntity(uint serial)
         {
@@ -72,7 +72,7 @@ namespace ClassicUO.Game.Managers
         //}
     }
 
-    public class WorldMapEntityManager
+    internal class WorldMapEntityManager
     {
         private bool _ackReceived;
         private uint _lastUpdate, _lastPacketSend, _lastPacketRecv;

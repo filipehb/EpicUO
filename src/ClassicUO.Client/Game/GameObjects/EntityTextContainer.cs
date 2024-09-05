@@ -30,17 +30,17 @@
 
 #endregion
 
+using ClassicUO.Assets;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Data;
 using ClassicUO.Game.Managers;
-using ClassicUO.Game.UI.Gumps;
 using ClassicUO.Renderer;
 using ClassicUO.Utility.Collections;
 using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.GameObjects
 {
-    public class TextContainer : LinkedObject
+    internal class TextContainer : LinkedObject
     {
         public int Size,
             MaxSize = 5;
@@ -180,7 +180,7 @@ namespace ClassicUO.Game.GameObjects
                 return;
             }
 
-            int offY = -NameOverheadGump.CurrentHeight;
+            int offY = 0;
 
             Point p = new Point();
 

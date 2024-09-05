@@ -35,14 +35,14 @@ using System;
 
 namespace ClassicUO.Game.Data
 {
-    public enum Lock : byte
+    internal enum Lock : byte
     {
         Up = 0,
         Down = 1,
         Locked = 2
     }
 
-    public sealed class Skill
+    internal sealed class Skill
     {
         public static event EventHandler<SkillChangeArgs> SkillValueChangedEvent;
         public static event EventHandler<SkillChangeArgs> SkillBaseChangedEvent;

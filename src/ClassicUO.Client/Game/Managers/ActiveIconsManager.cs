@@ -34,7 +34,7 @@ using System.Collections.Generic;
 
 namespace ClassicUO.Game.Managers
 {
-    public class ActiveSpellIconsManager
+    internal class ActiveSpellIconsManager
     {
         private readonly HashSet<ushort> _activeIcons = new HashSet<ushort>();
 

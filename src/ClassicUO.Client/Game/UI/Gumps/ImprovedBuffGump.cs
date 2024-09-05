@@ -32,13 +32,10 @@ namespace ClassicUO.Game.UI.Gumps
 
         public void AddBuff(BuffIcon icon)
         {
-            if (icon != null)
-            {
-                CoolDownBar coolDownBar = new CoolDownBar(TimeSpan.FromMilliseconds(icon.Timer - Time.Ticks), icon.Title.Replace("<br>", " "), ProfileManager.CurrentProfile.ImprovedBuffBarHue, 0, 0, icon.Graphic, icon.Type, true);
-                coolDownBar.SetTooltip(icon.Text);
-                BuffBarManager.AddCoolDownBar(coolDownBar, _direction, _box);
-                _box.Add(coolDownBar);
-            }
+            CoolDownBar coolDownBar = new CoolDownBar(TimeSpan.FromMilliseconds(icon.Timer - Time.Ticks), icon.Title, ProfileManager.CurrentProfile.ImprovedBuffBarHue, 0, 0, icon.Graphic, icon.Type, true);
+            coolDownBar.SetTooltip(icon.Text);
+            BuffBarManager.AddCoolDownBar(coolDownBar, _direction, _box);
+            _box.Add(coolDownBar);
         }
 
         public void RemoveBuff(BuffIconType graphic)
@@ -108,12 +105,12 @@ namespace ClassicUO.Game.UI.Gumps
 
             _box = new DataBox(0, 0, Width, HEIGHT);
 
-
+            
 
             Add(_background);
             Add(_button);
             Add(_box);
-
+            
             BuffBarManager.Clear();
             if (World.Player != null)
             {

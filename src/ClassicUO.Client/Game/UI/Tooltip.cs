@@ -30,14 +30,16 @@
 
 #endregion
 
-using ClassicUO.Assets;
+using System;
+using System.Text;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Data;
 using ClassicUO.Game.GameObjects;
-using ClassicUO.Game.UI.Controls;
+using ClassicUO.Assets;
 using ClassicUO.Renderer;
 using ClassicUO.Utility;
 using Microsoft.Xna.Framework;
+using ClassicUO.Game.UI.Controls;
 
 namespace ClassicUO.Game.UI
 {
@@ -126,7 +128,7 @@ namespace ClassicUO.Game.UI
                     fontSize = ProfileManager.CurrentProfile.SelectedToolTipFontSize;
                 }
 
-                _textBox = new TextBox(
+                    _textBox = new TextBox(
                     TextBox.ConvertHtmlToFontStashSharpCommand(finalString).Trim(),
                     font,
                     fontSize,
@@ -134,7 +136,7 @@ namespace ClassicUO.Game.UI
                     hue,
                     align,
                     true
-                );
+                    );
                 _textBox.Width = _textBox.MeasuredSize.X + 10;
                 if (_textBox.Width > 600)
                     _textBox.Width = 600;

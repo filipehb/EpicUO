@@ -34,7 +34,7 @@ using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.GameObjects
 {
-    public sealed class IsometricLight
+    internal sealed class IsometricLight
     {
         private float _height = -0.75f;
         private int _overall = 9, _realOveall = 9;

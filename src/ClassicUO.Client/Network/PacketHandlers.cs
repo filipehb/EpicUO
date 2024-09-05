@@ -504,7 +504,6 @@ namespace ClassicUO.Network
                 if (damage > 0)
                 {
                     World.WorldTextManager.AddDamage(entity, damage);
-                    EventSink.InvokeOnEntityDamage(entity, damage);
                 }
             }
         }
@@ -724,6 +723,14 @@ namespace ClassicUO.Network
                     UoAssist.SignalStamina();
                     UoAssist.SignalMana();
                 }
+                //Gets the profile URL from the update packet
+                if (p.Position == 43)
+                {
+                    p.Seek(121);
+                }
+
+                entity.ProfileURL = p.ReadASCII();
+
             }
         }
 
@@ -1603,8 +1610,6 @@ namespace ClassicUO.Network
                         );
                     }
 
-                    EventSink.InvokeOnOpenContainer(item, serial);
-
                     UIManager.RemovePosition(serial);
                 }
                 else
@@ -1839,8 +1844,6 @@ namespace ClassicUO.Network
                     IsGuild = false,
                     Name = $"Your Corpse"
                 };
-
-                EventSink.InvokeOnPlayerDeath(World.Player, World.Player.Serial);
             }
         }
 
@@ -2418,7 +2421,6 @@ namespace ClassicUO.Network
                 byte temp = p.ReadUInt8();
 
                 weather.Generate(type, count, temp);
-                EventSink.InvokeOnSetWeather(null, new WeatherEventArgs(type, count, temp));
             }
         }
 
@@ -4951,8 +4953,6 @@ namespace ClassicUO.Network
                 }
             }
 
-            EventSink.InvokeClilocMessageReceived(entity, new MessageEventArgs(entity, text, name, hue, type, (byte)font, text_type, true) { Cliloc = cliloc });
-
             MessageManager.HandleMessage(
                 entity,
                 text,
@@ -5655,8 +5655,8 @@ namespace ClassicUO.Network
                         uint wtfCliloc = p.ReadUInt32BE();
 
                         ushort arg_length = p.ReadUInt16BE();
-                        var str = p.ReadUnicodeLE(2);
-                        var args = str + p.ReadUnicodeLE();
+                        p.Skip(4);
+                        string args = p.ReadUnicodeLE();
                         string title = ClilocLoader.Instance.Translate(
                             (int)titleCliloc,
                             args,
@@ -5755,45 +5755,11 @@ namespace ClassicUO.Network
             bool ignoreobject = p.ReadUInt16BE() != 0;
             uint cliloc = p.ReadUInt32BE();
             string name = p.ReadUnicodeLE();
-
-            switch (type)
-            {
-                case WaypointsType.Corpse:
-                    World.WMapManager.AddOrUpdate(serial, x, y, 0, map, true, "Corpse");
-                    break;
-                case WaypointsType.PartyMember:
-                    break;
-                case WaypointsType.RallyPoint:
-                    break;
-                case WaypointsType.QuestGiver:
-                    break;
-                case WaypointsType.QuestDestination:
-                    break;
-                case WaypointsType.Resurrection:
-                    World.WMapManager.AddOrUpdate(serial, x, y, 0, map, true, "Resurrection");
-                    break;
-                case WaypointsType.PointOfInterest:
-                    break;
-                case WaypointsType.Landmark:
-                    break;
-                case WaypointsType.Town:
-                    break;
-                case WaypointsType.Dungeon:
-                    break;
-                case WaypointsType.Moongate:
-                    break;
-                case WaypointsType.Shop:
-                    break;
-                case WaypointsType.Player:
-                    break;
-            }
         }
 
         private static void RemoveWaypoint(ref StackDataReader p)
         {
             uint serial = p.ReadUInt32BE();
-
-            World.WMapManager.Remove(serial);
         }
 
         private static void KrriosClientSpecial(ref StackDataReader p)
@@ -7244,81 +7210,66 @@ namespace ClassicUO.Network
                 GameActions.Print($"GumpID: {gumpID}");
             }
 
-            if (ProfileManager.CurrentProfile != null)
+            if (gumpID == 1426736667 || (ProfileManager.CurrentProfile != null && ProfileManager.CurrentProfile.ServerName == "UOAlive" && gumpID == 4258191894)) //SOS message gump
             {
-                if (gumpID == ProfileManager.CurrentProfile.SOSGumpID) //SOS message gump
+                for (int i = 0; i < gump.Children.Count; i++)
                 {
-                    for (int i = 0; i < gump.Children.Count; i++)
+                    if (gump.Children[i] is HtmlControl)
                     {
-                        if (gump.Children[i] is HtmlControl)
+                        string pattern = @"(\d+('N)?('S)?('E)?('W)?)";
+
+                        string[] loc = new string[4];
+
+                        int c = 0;
+                        foreach (Match m in Regex.Matches(((HtmlControl)gump.Children[i]).Text, pattern, RegexOptions.Multiline))
                         {
-                            string pattern = @"(\d+('N)?('S)?('E)?('W)?)";
-
-                            string[] loc = new string[4];
-
-                            int c = 0;
-                            foreach (Match m in Regex.Matches(((HtmlControl)gump.Children[i]).Text, pattern, RegexOptions.Multiline))
-                            {
-                                if (c > 3)
-                                    break;
-                                loc[c] = m.Value.Replace("'", "");
-                                c++;
-                            }
-
-                            if (loc[0] == null || loc[1] == null || loc[2] == null || loc[3] == null)
+                            if (c > 3)
                                 break;
-
-                            int xlong = 0, ylat = 0, xmins = 0, ymins = 0;
-                            bool xeast = true, ysouth = true;
-
-                            if (loc[1].Contains("N"))
-                                ysouth = false;
-
-                            if (loc[3].Contains("W"))
-                                xeast = false;
-
-                            xlong = int.Parse(loc[2]);
-                            ylat = int.Parse(loc[0]);
-                            xmins = int.Parse(loc[3].Substring(0, loc[3].Length - 1)); ;
-                            ymins = int.Parse(loc[1].Substring(0, loc[1].Length - 1));
-                            Vector3 location = ReverseLookup(xlong, ylat, xmins, ymins, xeast, ysouth);
-                            GameActions.Print($"If I am on the correct facet I think these coords should be somewhere near.. {location.X} and {location.Y}..");
-
-                            MenuButton menu = new MenuButton(25, Color.Black.PackedValue, 0.75f, "Menu") { X = gump.Width - 46, Y = 6 };
-                            menu.MouseUp += (s, e) =>
-                            {
-                                menu.ContextMenu?.Show();
-                            };
-
-                            menu.ContextMenu = new ContextMenuControl();
-                            menu.ContextMenu.Add(new ContextMenuItemEntry("Locate on world map", () =>
-                            {
-                                WorldMapGump gump = UIManager.GetGump<WorldMapGump>();
-                                if (gump == null)
-                                {
-                                    gump = new WorldMapGump();
-                                    UIManager.Add(gump);
-                                }
-                                gump.GoToMarker((int)location.X, (int)location.Y, true);
-                            }));
-
-                            menu.ContextMenu.Add(new ContextMenuItemEntry("Add marker on world map", () =>
-                            {
-                                WorldMapGump gump = UIManager.GetGump<WorldMapGump>();
-                                if (gump == null)
-                                {
-                                    gump = new WorldMapGump();
-                                    UIManager.Add(gump);
-                                }
-                                gump.AddUserMarker("SOS", (int)location.X, (int)location.Y, World.Map.Index);
-                            }));
-
-                            menu.ContextMenu.Add(new ContextMenuItemEntry("Close", () =>
-                            {
-                                gump.Dispose();
-                            }));
-                            gump.Add(menu);
+                            loc[c] = m.Value.Replace("'", "");
+                            c++;
                         }
+
+                        if (loc[0] == null || loc[1] == null || loc[2] == null || loc[3] == null)
+                            break;
+
+                        int xlong = 0, ylat = 0, xmins = 0, ymins = 0;
+                        bool xeast = true, ysouth = true;
+
+                        if (loc[1].Contains("N"))
+                            ysouth = false;
+
+                        if (loc[3].Contains("W"))
+                            xeast = false;
+
+                        xlong = int.Parse(loc[2]);
+                        ylat = int.Parse(loc[0]);
+                        xmins = int.Parse(loc[3].Substring(0, loc[3].Length - 1)); ;
+                        ymins = int.Parse(loc[1].Substring(0, loc[1].Length - 1));
+                        Vector3 location = ReverseLookup(xlong, ylat, xmins, ymins, xeast, ysouth);
+                        GameActions.Print($"If I am on the correct facet I think these coords should be somewhere near.. {location.X} and {location.Y}..");
+
+                        MenuButton menu = new MenuButton(25, Color.Black.PackedValue, 0.75f, "Menu") { X = gump.Width - 46, Y = 6 };
+                        menu.MouseUp += (s, e) =>
+                        {
+                            menu.ContextMenu?.Show();
+                        };
+
+                        menu.ContextMenu = new ContextMenuControl();
+                        menu.ContextMenu.Add(new ContextMenuItemEntry("Locate on world map", () =>
+                        {
+                            WorldMapGump gump = UIManager.GetGump<WorldMapGump>();
+                            if (gump == null)
+                            {
+                                gump = new WorldMapGump();
+                                UIManager.Add(gump);
+                            }
+                            gump.GoToMarker((int)location.X, (int)location.Y, true);
+                        }));
+                        menu.ContextMenu.Add(new ContextMenuItemEntry("Close", () =>
+                        {
+                            gump.Dispose();
+                        }));
+                        gump.Add(menu);
                     }
                 }
             }
@@ -7345,7 +7296,7 @@ namespace ClassicUO.Network
             if (!ySouth)
                 absLat = 360.0 - absLat;
 
-            int x, y;
+            int x, y, z;
 
             x = xCenter + (int)((absLong * xWidth) / 360);
             y = yCenter + (int)((absLat * yHeight) / 360);

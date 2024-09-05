@@ -35,7 +35,7 @@ using System;
 namespace ClassicUO.Game.Data
 {
     [Flags]
-    public enum LockedFeatureFlags : uint
+    internal enum LockedFeatureFlags : uint
     {
         None = 0x00000000,
         T2A = 0x00000001,
@@ -77,7 +77,7 @@ namespace ClassicUO.Game.Data
         ExpansionEJ = ExpansionTOL | EJ
     }
 
-    public class LockedFeatures
+    internal class LockedFeatures
     {
         public LockedFeatureFlags Flags { get; private set; }
 

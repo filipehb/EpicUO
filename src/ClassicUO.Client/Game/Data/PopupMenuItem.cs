@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.Data
 {
-    public readonly struct PopupMenuItem
+    internal readonly struct PopupMenuItem
     {
         public PopupMenuItem(int cliloc, ushort index, ushort hue, ushort replaced, ushort flags)
         {

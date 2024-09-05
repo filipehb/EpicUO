@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.Managers
 {
-    public enum Season
+    internal enum Season
     {
         Spring,
         Summer,

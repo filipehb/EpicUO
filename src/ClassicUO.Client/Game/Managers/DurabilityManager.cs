@@ -37,11 +37,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System;
 
 namespace ClassicUO.Game.Managers
 {
-    public class DurabilityManager : IDisposable
+    internal class DurabilityManager
     {
         private readonly ConcurrentDictionary<uint, DurabiltyProp> _itemLayerSlots = new ConcurrentDictionary<uint, DurabiltyProp>();
         
@@ -56,7 +55,7 @@ namespace ClassicUO.Game.Managers
 
         public DurabilityManager()
         {
-            EventSink.OPLOnReceive += OnOPLReceive;
+            World.OPL.OPLOnReceive += OnOPLReceive;
         }
 
         public bool TryGetDurability(uint serial, out DurabiltyProp durability)
@@ -64,7 +63,7 @@ namespace ClassicUO.Game.Managers
             return _itemLayerSlots.TryGetValue(serial, out durability);
         }
 
-        private void OnOPLReceive(object s, OPLEventArgs e)
+        private void OnOPLReceive(ObjectPropertiesListManager.OPLEventArgs e)
         {
             Task.Factory.StartNew(() =>
             {
@@ -107,13 +106,9 @@ namespace ClassicUO.Game.Managers
                 new DurabiltyProp(serial, min, max) : new DurabiltyProp();
         }
 
-        public void Dispose()
-        {
-            EventSink.OPLOnReceive -= OnOPLReceive;
-        }
     }
 
-    public class DurabiltyProp
+    internal class DurabiltyProp
     {
         public int Serial { get; set; }
         public int Durabilty { get; set; }

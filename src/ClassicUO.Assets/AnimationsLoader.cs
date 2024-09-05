@@ -71,7 +71,7 @@ namespace ClassicUO.Assets
         public static AnimationsLoader Instance =>
             _instance ?? (_instance = new AnimationsLoader());
 
-        public IReadOnlyDictionary<ushort, Dictionary<ushort, EquipConvData>> EquipConversions => _equipConv;
+        public IReadOnlyDictionary<ushort, Dictionary<ushort, EquipConvData>> EquipConversions =>  _equipConv;
 
         public List<(ushort, byte)>[] GroupReplaces { get; } =
             new List<(ushort, byte)>[2]
@@ -189,7 +189,7 @@ namespace ClassicUO.Assets
                                     _mobTypes[id] = new MobTypeInfo()
                                     {
                                         Type = (AnimationGroupsType)i,
-                                        Flags = (AnimationFlags)(0x80000000 | number)
+                                        Flags = (AnimationFlags )(0x80000000 | number)
                                     };
 
                                     break;
@@ -292,7 +292,7 @@ namespace ClassicUO.Assets
             ClientVersion clientVersion,
             ushort body,
             ref ushort hue,
-            ref AnimationFlags flags,
+            ref AnimationFlags  flags,
             out int fileIndex,
             out AnimationGroupsType animType,
             out sbyte mountHeight
@@ -343,7 +343,7 @@ namespace ClassicUO.Assets
                         }
                     }
                 }
-
+                
                 return animIndices;
             }
 
@@ -372,7 +372,7 @@ namespace ClassicUO.Assets
                 return ReadOnlySpan<AnimIdxBlock>.Empty;
             }
 
-            if (offset + (actionCount * MAX_DIRECTIONS * sizeof(AnimIdxBlock)) > end)
+            if (offset + (actionCount * MAX_DIRECTIONS * sizeof(AnimIdxBlock)) >= end)
             {
                 return ReadOnlySpan<AnimIdxBlock>.Empty;
             }
@@ -388,7 +388,7 @@ namespace ClassicUO.Assets
         private long CalculateOffset(
             ushort graphic,
             AnimationGroupsType type,
-            AnimationFlags flags,
+            AnimationFlags  flags,
             out int groupCount
         )
         {
@@ -1071,91 +1071,91 @@ namespace ClassicUO.Assets
             {
                 case 7:
                 case 0:
+                {
+                    if (data.Direction1 == -1)
                     {
-                        if (data.Direction1 == -1)
+                        if (direction == 7)
                         {
-                            if (direction == 7)
-                            {
-                                direction = (byte)data.Direction4;
-                            }
-                            else
-                            {
-                                direction = (byte)data.Direction2;
-                            }
-                        }
-                        else
-                        {
-                            direction = (byte)data.Direction1;
-                        }
-
-                        break;
-                    }
-
-                case 1:
-                case 2:
-                    {
-                        if (data.Direction2 == -1)
-                        {
-                            if (direction == 1)
-                            {
-                                direction = (byte)data.Direction1;
-                            }
-                            else
-                            {
-                                direction = (byte)data.Direction3;
-                            }
+                            direction = (byte)data.Direction4;
                         }
                         else
                         {
                             direction = (byte)data.Direction2;
                         }
-
-                        break;
+                    }
+                    else
+                    {
+                        direction = (byte)data.Direction1;
                     }
 
-                case 3:
-                case 4:
+                    break;
+                }
+
+                case 1:
+                case 2:
+                {
+                    if (data.Direction2 == -1)
                     {
-                        if (data.Direction3 == -1)
+                        if (direction == 1)
                         {
-                            if (direction == 3)
-                            {
-                                direction = (byte)data.Direction2;
-                            }
-                            else
-                            {
-                                direction = (byte)data.Direction4;
-                            }
+                            direction = (byte)data.Direction1;
                         }
                         else
                         {
                             direction = (byte)data.Direction3;
                         }
-
-                        break;
+                    }
+                    else
+                    {
+                        direction = (byte)data.Direction2;
                     }
 
-                case 5:
-                case 6:
+                    break;
+                }
+
+                case 3:
+                case 4:
+                {
+                    if (data.Direction3 == -1)
                     {
-                        if (data.Direction4 == -1)
+                        if (direction == 3)
                         {
-                            if (direction == 5)
-                            {
-                                direction = (byte)data.Direction3;
-                            }
-                            else
-                            {
-                                direction = (byte)data.Direction1;
-                            }
+                            direction = (byte)data.Direction2;
                         }
                         else
                         {
                             direction = (byte)data.Direction4;
                         }
-
-                        break;
                     }
+                    else
+                    {
+                        direction = (byte)data.Direction3;
+                    }
+
+                    break;
+                }
+
+                case 5:
+                case 6:
+                {
+                    if (data.Direction4 == -1)
+                    {
+                        if (direction == 5)
+                        {
+                            direction = (byte)data.Direction3;
+                        }
+                        else
+                        {
+                            direction = (byte)data.Direction1;
+                        }
+                    }
+                    else
+                    {
+                        direction = (byte)data.Direction4;
+                    }
+
+                    break;
+                }
             }
 
             GetSittingAnimDirection(ref direction, ref mirror, ref x, ref y);
@@ -1214,12 +1214,12 @@ namespace ClassicUO.Assets
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte GetDeathAction(
             ushort animID,
-            AnimationFlags animFlags,
+            AnimationFlags  animFlags,
             AnimationGroupsType animType,
             bool second,
             bool isRunning = false
         )
-        {
+        {        
             //ConvertBodyIfNeeded(ref animID);
 
             if (animFlags.HasFlag(AnimationFlags.CalculateOffsetByLowGroup))
@@ -1249,14 +1249,14 @@ namespace ClassicUO.Assets
                     );
 
                 case AnimationGroupsType.SeaMonster:
+                {
+                    if (!isRunning)
                     {
-                        if (!isRunning)
-                        {
-                            return 8;
-                        }
-
-                        goto case AnimationGroupsType.Monster;
+                        return 8;
                     }
+
+                    goto case AnimationGroupsType.Monster;
+                }
 
                 case AnimationGroupsType.Monster:
 
@@ -1354,7 +1354,7 @@ namespace ClassicUO.Assets
             reader.Seek(dataStart);
 
             byte frameCount = (byte)(
-                type < AnimationGroupsType.Equipment ? Math.Round(fc / (float)MAX_DIRECTIONS) : MAX_DIRECTIONS * 2
+                type < AnimationGroupsType.Equipment ? Math.Round(fc / (float) MAX_DIRECTIONS) : MAX_DIRECTIONS * 2
             );
             if (frameCount > _frames.Length)
             {
@@ -1446,17 +1446,12 @@ namespace ClassicUO.Assets
                 return Span<FrameInfo>.Empty;
             }
 
-            if (index.Position == 0xFFFF_FFFF || index.Size == 0xFFFF_FFFF || index.Size <= 0)
+            if (index.Position == 0xFFFF_FFFF || index.Size == 0xFFFF_FFFF)
             {
                 return Span<FrameInfo>.Empty;
             }
 
             var file = _files[fileIndex];
-
-            if (index.Position + index.Size > file.Length)
-            {
-                return Span<FrameInfo>.Empty;
-            }
 
             var reader = new StackDataReader(
                 new ReadOnlySpan<byte>(
@@ -1630,8 +1625,41 @@ namespace ClassicUO.Assets
 
             public uint DataOffset;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void FixDwarfAnimation(ref byte direction, ref bool mirror, ref int x, ref int y)
+        {
+            const int DWARF_OFFSET_X = 8;
+            int offsX = DWARF_OFFSET_X;
+            if (mirror)
+            {
+                if (direction == 3)
+                {
+                    y += 25;
+                    x += offsX - 4;
+                }
+                else
+                {
+                    y += 9;
+                }
+            }
+            else
+            {
+                if (direction == 3)
+                {
+                    y += 23;
+                    x -= 3;
+                }
+                else
+                {
+                    y += 10;
+                    x -= offsX + 1;
+                }
+            }
+        }
     }
 
+    
     public enum AnimationGroups
     {
         None = 0,
@@ -1840,4 +1868,5 @@ namespace ClassicUO.Assets
         Anim4 = 0x8,
         Anim5 = 0x10,
     }
+
 }

@@ -30,16 +30,17 @@
 
 #endregion
 
-using ClassicUO.Assets;
-using ClassicUO.Configuration;
 using ClassicUO.Renderer;
+using ClassicUO.Assets;
 using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
+using System;
 using System.Text.RegularExpressions;
+using ClassicUO.Configuration;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public class TextBox : Control
+    internal class TextBox : Control
     {
         private RichTextLayout _rtl;
         private string _font;
@@ -54,7 +55,7 @@ namespace ClassicUO.Game.UI.Controls
             {
                 if (ProfileManager.CurrentProfile != null)
                     return ProfileManager.CurrentProfile.TextBorderSize;
-                return 1;
+                return 2;
             }
         }
 
@@ -69,10 +70,37 @@ namespace ClassicUO.Game.UI.Controls
             bool strokeEffect = true,
             bool supportsCommands = true,
             bool ignoreColorCommands = false,
-            bool calculateGlyphs = false,
-            bool converthtmlcolors = true
-        ) : this(text, font, size, width, ConvertHueToColor(hue), align, strokeEffect, supportsCommands, ignoreColorCommands, calculateGlyphs, converthtmlcolors) { }
+            bool calculateGlyphs = false
+        )
+        {
+            if (strokeEffect)
+                text = $"/es[{getStrokeSize}]" + text;
 
+            _rtl = new RichTextLayout
+            {
+                Font = TrueTypeLoader.Instance.GetFont(font, size),
+                Text = text,
+                IgnoreColorCommand = ignoreColorCommands,
+                SupportsCommands = supportsCommands,
+                CalculateGlyphs = calculateGlyphs
+            };
+
+            if (width != null)
+                _rtl.Width = width;
+
+            _font = font;
+            _size = size;
+            _color.PackedValue = HuesLoader.Instance.GetHueColorRgba8888(31, (ushort)hue);
+
+            if (hue == 0xFFFF || hue == ushort.MaxValue)
+                _color = Color.White;
+
+            _align = align;
+
+            AcceptMouseInput = true;
+            Width = _rtl.Width == null ? _rtl.Size.X : (int)_rtl.Width;
+            base.Height = _rtl.Size.Y;
+        }
         public TextBox
             (
                 string text,
@@ -84,19 +112,11 @@ namespace ClassicUO.Game.UI.Controls
                 bool strokeEffect = true,
                 bool supportsCommands = true,
                 bool ignoreColorCommands = false,
-                bool calculateGlyphs = false,
-                bool converthtmlcolors = true
+                bool calculateGlyphs = false
             )
         {
             if (strokeEffect)
-            {
                 text = $"/es[{getStrokeSize}]" + text;
-            }
-
-            if (converthtmlcolors)
-            {
-                text = ConvertHTMLColorsToFSS(text);
-            }
 
             _rtl = new RichTextLayout
             {
@@ -104,7 +124,7 @@ namespace ClassicUO.Game.UI.Controls
                 Text = text,
                 IgnoreColorCommand = ignoreColorCommands,
                 SupportsCommands = supportsCommands,
-                CalculateGlyphs = calculateGlyphs,
+                CalculateGlyphs = calculateGlyphs
             };
             if (width != null)
                 _rtl.Width = width;
@@ -114,19 +134,10 @@ namespace ClassicUO.Game.UI.Controls
             _color = color;
 
             _align = align;
-            ConvertHtmlColors = converthtmlcolors;
+
             AcceptMouseInput = true;
             Width = _rtl.Width == null ? _rtl.Size.X : (int)_rtl.Width;
             base.Height = _rtl.Size.Y;
-        }
-
-        public static Color ConvertHueToColor(int hue)
-        {
-            if (hue == 0xFFFF || hue == ushort.MaxValue)
-            {
-                return Color.White;
-            }
-            return new Color() { PackedValue = HuesLoader.Instance.GetHueColorRgba8888(31, (ushort)hue) };
         }
 
         public bool PixelCheck(int x, int y)
@@ -177,15 +188,7 @@ namespace ClassicUO.Game.UI.Controls
             {
                 if (_rtl.Text != value)
                 {
-                    if (ConvertHtmlColors)
-                    {
-                        _rtl.Text = ConvertHTMLColorsToFSS(value);
-                    }
-                    else
-                    {
-                        _rtl.Text = value;
-                    }
-
+                    _rtl.Text = value;
                     _dirty = true;
                 }
             }
@@ -196,12 +199,8 @@ namespace ClassicUO.Game.UI.Controls
             get => (int)_color.PackedValue;
             set
             {
-                var newVal = HuesLoader.Instance.GetHueColorRgba8888(31, (ushort)value);
-                if (_color.PackedValue != newVal)
-                {
-                    _color.PackedValue = newVal;
-                    _dirty = true;
-                }
+                _color.PackedValue = HuesLoader.Instance.GetHueColorRgba8888(31, (ushort)value);
+                _dirty = true;
             }
         }
 
@@ -238,19 +237,13 @@ namespace ClassicUO.Game.UI.Controls
             }
         }
 
-        public bool ConvertHtmlColors { get; set; }
-
         /// <summary>
         /// Update the text of the TextBox
         /// </summary>
         /// <param name="text">New string</param>
         /// <param name="width">Set to null to ignore width, taking as much width as needed.</param>
-        public void UpdateText(string text, int? width = null, bool converthtmlcolors = true)
+        public void UpdateText(string text, int? width = null)
         {
-            if (converthtmlcolors)
-            {
-                text = ConvertHTMLColorsToFSS(text);
-            }
 
             if (width != null && width > 0)
             {
@@ -272,36 +265,21 @@ namespace ClassicUO.Game.UI.Controls
             }
         }
 
-        public static string ConvertHTMLColorsToFSS(string text)
-        {
-            string finalString;
-
-            if (string.IsNullOrEmpty(text))
-                return "";
-
-            finalString = Regex.Replace(text, "<basefont color=\"?'?(?<color>.*?)\"?'?>", " /c[${color}]", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            finalString = Regex.Replace(finalString, "<Bodytextcolor\"?'?(?<color>.*?)\"?'?>", " /c[${color}]", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            finalString = finalString.Replace("</basefont>", "/cd").Replace("</BASEFONT>", "/cd").Replace("\n", "\n/cd");
-
-            return finalString;
-        }
-
         public static string ConvertHtmlToFontStashSharpCommand(string text)
         {
             string finalString;
 
-            if (string.IsNullOrEmpty(text))
+            if (String.IsNullOrEmpty(text))
                 return "";
 
-            finalString = ConvertHTMLColorsToFSS(text);
-
-            finalString = finalString.Replace("<br>", "\n").Replace("<BR>", "\n");
+            finalString = Regex.Replace(text, "<basefont color=\"?'?(?<color>.*?)\"?'?>", " /c[${color}]", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+            finalString = Regex.Replace(finalString, "<Bodytextcolor\"?'?(?<color>.*?)\"?'?>", " /c[${color}]", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+            finalString = finalString.Replace("</basefont>", "/cd").Replace("</BASEFONT>", "/cd").Replace("<br>", "\n").Replace("<BR>", "\n").Replace("\n", "\n/cd");
             finalString = finalString.Replace("<left>", "").Replace("</left>", "");
             finalString = finalString.Replace("<b>", "").Replace("</b>", "");
             finalString = finalString.Replace("</font>", "").Replace("<h2>", "");
             finalString = finalString.Replace("<BODY>", "").Replace("<body>", "");
             finalString = finalString.Replace("</BODY>", "").Replace("</body>", "");
-            finalString = finalString.Replace("</p>", "").Replace("<p>", "");
             return finalString;
         }
 

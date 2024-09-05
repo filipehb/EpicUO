@@ -1,5 +1,4 @@
 ﻿using ClassicUO.Assets;
-using ClassicUO.Configuration;
 using ClassicUO.Game.UI.Controls;
 using Microsoft.Xna.Framework;
 
@@ -8,70 +7,11 @@ namespace ClassicUO.Game.UI.Gumps
     internal class VersionHistory : Gump
     {
         private static string[] updateTexts = {
-            "/c[white][3.23.1]/cd\n" +
-                "- Fixed Weird lines if show Nameplate",
-
-            "/c[white][3.23.0]/cd\n" +
-                "- Nameplate healthbar poison and invul/paralyzed colors from Elderwyn\n" +
-                "- Target indiciator option from original client from Elderwyn\n" +
-                "- Advanced skill gump improvements from Elderwyn",
-
-            "/c[white][3.22.0]/cd\n" +
-                "- Spell book icon fix\n" +
-                "- Add option to add treasure maps as map markers instead of goto only\n" +
-                "- Added the same option for SOS messages\n" +
-                "- Fix text height for nameplates\n" +
-                "- Added option to disable auto follow",
-
-            "/c[white][3.21.4]/cd\n" +
-                "- Various bug fixes\n" +
-                "- Removed gump closing animation. Too many unforeseen issues with it.",
-
-            "/c[white][3.21.3]/cd\n" +
-            "- Changes to improve gump closing animations",
-
-            "/c[white][3.21.2]/cd\n" +
-                "- A bugfix release for 3.21 causing crashes",
-
-            "/c[white][3.21.0]/cd\n" +
-                "- A few bug fixes\n" +
-                "- A few fixes from CUO\n" +
-                "- Converted nameplates to use TTF fonts\n" +
-                "- Added an available client commands gump\n" +
-                "- World map alt lock now works, and middle mouse click will toggle freeview",
-
-            "/c[white][3.20.0]/cd\n" +
-                "- Being frozen wont cancel auto follow\n" +
-                "- Fix from CUO for buffs\n" +
-                "- Add ability to load custom spell definitions from an external file\n" +
-                "- Customize the options gump via ui file\n" +
-                "- Added saveposition tag for xml gumps\n" +
-                "- Can now open multiple journals\n",
-
-            "/c[white][3.19.0]/cd\n" +
-                "- SOS Gump ID configurable in settings\n" +
-                "- Added macro option to execute a client-side command\n" +
-                "- Added a command doesn't exist message\n" +
-                "- Follow party members on world map option\n" +
-                "- Added option to override party member body hues\n" +
-                "- Bug fix",
-
-             "/c[white][3.18.0]/cd\n" +
-                "- Added a language file that will contain UI text for easy language translations\n",
-
-             "/c[white][3.17.0]/cd\n" +
-                "- Added original paperdoll to customizable gump system\n" +
-                "- Imroved script loading time",
-
              "/c[white][3.16.0]/cd\n" +
                 "- Some small improvements for input boxes and the new option menu\n" +
                 "- Added player position offset option in TazUO->Misc\n" +
                 "- Fix for health indicator percentage\n" +
-                "- Fix tooltip centered text\n" +
-                "- Added a modding system almost identical to ServUO's script system\n" +
-                "- Added macros to use items from your counter bar\n" +
-                "- Simple auto loot improvements\n" +
-                "- Hold ctrl and drop an item anywhere on the game window to drop it",
+                "- Fix tooltip centered text",
 
             "/c[white][3.15.0]/cd\n" +
                 "- Mouse interaction for overhead text can be disabled\n" +
@@ -245,8 +185,8 @@ namespace ClassicUO.Game.UI.Gumps
             Add(bc);
 
             TextBox _;
-            Add(_ = new TextBox(Language.Instance.TazuoVersionHistory, TrueTypeLoader.EMBEDDED_FONT, 30, Width, Color.White, FontStashSharp.RichText.TextHorizontalAlignment.Center, false) { Y = 10 });
-            Add(_ = new TextBox(Language.Instance.CurrentVersion + CUOEnviroment.Version.ToString(), TrueTypeLoader.EMBEDDED_FONT, 20, Width, Color.Orange, FontStashSharp.RichText.TextHorizontalAlignment.Center, false) { Y = _.Y + _.Height + 5 });
+            Add(_ = new TextBox("TazUO Version History", TrueTypeLoader.EMBEDDED_FONT, 30, Width, Color.White, FontStashSharp.RichText.TextHorizontalAlignment.Center, false) { Y = 10 });
+            Add(_ = new TextBox("Current Version: " + CUOEnviroment.Version.ToString(), TrueTypeLoader.EMBEDDED_FONT, 20, Width, Color.Orange, FontStashSharp.RichText.TextHorizontalAlignment.Center, false) { Y = _.Y + _.Height + 5 });
 
             ScrollArea scroll = new ScrollArea(10, _.Y + _.Height, Width - 20, Height - (_.Y + _.Height) - 20, true) { ScrollbarBehaviour = ScrollbarBehaviour.ShowAlways };
 
@@ -263,14 +203,14 @@ namespace ClassicUO.Game.UI.Gumps
 
 
             HitBox _hit;
-            Add(_ = new TextBox(Language.Instance.TazUOWiki, TrueTypeLoader.EMBEDDED_FONT, 15, 200, Color.Orange, strokeEffect: false) { X = 25, Y = Height - 20 });
+            Add(_ = new TextBox("TazUO Wiki", TrueTypeLoader.EMBEDDED_FONT, 15, 200, Color.Orange, strokeEffect: false) { X = 25, Y = Height - 20 });
             Add(_hit = new HitBox(_.X, _.Y, _.MeasuredSize.X, _.MeasuredSize.Y));
             _hit.MouseUp += (s, e) =>
             {
                 Utility.Platforms.PlatformHelper.LaunchBrowser("https://github.com/bittiez/ClassicUO/wiki");
             };
 
-            Add(_ = new TextBox(Language.Instance.TazUOWiki, TrueTypeLoader.EMBEDDED_FONT, 15, 200, Color.Orange, strokeEffect: false) { X = 280, Y = Height - 20 });
+            Add(_ = new TextBox("TazUO Discord", TrueTypeLoader.EMBEDDED_FONT, 15, 200, Color.Orange, strokeEffect: false) { X = 280, Y = Height - 20 });
             Add(_hit = new HitBox(_.X, _.Y, _.MeasuredSize.X, _.MeasuredSize.Y));
             _hit.MouseUp += (s, e) =>
             {

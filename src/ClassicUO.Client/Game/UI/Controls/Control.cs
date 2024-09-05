@@ -30,6 +30,9 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using ClassicUO.Game.Managers;
 using ClassicUO.Input;
 using ClassicUO.Renderer;
@@ -37,14 +40,12 @@ using ClassicUO.Utility;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SDL2;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Keyboard = ClassicUO.Input.Keyboard;
+using Mouse = ClassicUO.Input.Mouse;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public abstract class Control
+    internal abstract class Control
     {
         internal static int _StepsDone = 1;
         internal static int _StepChanger = 1;
@@ -55,7 +56,6 @@ namespace ClassicUO.Game.UI.Controls
         private bool _handlesKeyboardFocus;
         private Point _offset;
         private Control _parent;
-        private float alpha = 1.0f;
 
         protected Control(Control parent = null)
         {
@@ -76,16 +76,6 @@ namespace ClassicUO.Game.UI.Controls
         public uint LocalSerial { get; set; }
 
         public bool IsFromServer { get; set; }
-
-        /// <summary>
-        /// This is not implemented in all controls, this is for use in custom control's that want to have a scale setting
-        /// </summary>
-        public double Scale { get; set; } = 1.0f;
-
-        /// <summary>
-        /// This is intended for scaling mouse positions and other non-visual uses
-        /// </summary>
-        public double InternalScale { get; set; } = 1.0f;
 
         public int Page { get; set; }
 
@@ -124,15 +114,7 @@ namespace ClassicUO.Game.UI.Controls
 
         public bool IsFocused { get; set; }
 
-        public float Alpha
-        {
-            get => alpha; set
-            {
-                float old = alpha;
-                alpha = value;
-                AlphaChanged(old, value);
-            }
-        }
+        public float Alpha { get; set; } = 1.0f;
 
         public List<Control> Children { get; }
 
@@ -279,6 +261,8 @@ namespace ClassicUO.Game.UI.Controls
             }
         }
 
+
+
         public virtual bool Draw(UltimaBatcher2D batcher, int x, int y)
         {
             if (IsDisposed)
@@ -292,9 +276,9 @@ namespace ClassicUO.Game.UI.Controls
                 {
                     break;
                 }
-                Control c = Children.ElementAt(i);
+                Control c = Children[i];
 
-                if (c != null && (c.Page == 0 || c.Page == ActivePage))
+                if (c.Page == 0 || c.Page == ActivePage)
                 {
                     if (c.IsVisible)
                     {
@@ -308,9 +292,6 @@ namespace ClassicUO.Game.UI.Controls
             return true;
         }
 
-        /// <summary>
-        /// Update is called as often as possible.
-        /// </summary>
         public virtual void Update()
         {
             if (IsDisposed)
@@ -318,30 +299,24 @@ namespace ClassicUO.Game.UI.Controls
                 return;
             }
 
-
             if (Children.Count != 0)
             {
-                List<Control> removalList = new List<Control>(); ;
+                //InitializeControls();
                 int w = 0, h = 0;
 
                 for (int i = 0; i < Children.Count; i++)
                 {
-                    if (i < 0 || i >= Children.Count)
-                    {
-                        continue;
-                    }
-
-                    Control c = Children.ElementAt(i);
-
-                    if (c == null)
-                    {
-                        continue;
-                    }
+                    Control c = Children[i];
 
                     if (c.IsDisposed)
                     {
-                        removalList.Add(c);
-                        continue;
+                        if (i - 1 >= 0 && i - 1 < Children.Count)
+                        {
+                            OnChildRemoved();
+                            Children.RemoveAt(i--);
+
+                            continue;
+                        }
                     }
 
                     c.Update();
@@ -363,15 +338,6 @@ namespace ClassicUO.Game.UI.Controls
                     }
                 }
 
-                if (removalList.Count > 0)
-                {
-                    foreach (Control c in removalList)
-                    {
-                        OnChildRemoved();
-                        Children.Remove(c);
-                    }
-                }
-
                 if (WantUpdateSize && IsVisible)
                 {
                     if (w != Width)
@@ -387,98 +353,6 @@ namespace ClassicUO.Game.UI.Controls
                     WantUpdateSize = false;
                 }
             }
-        }
-
-        /// <summary>
-        /// Intended for updates that don't need to occur as frequently as Update() does.
-        /// SlowUpdate is called twice per second.
-        /// </summary>
-        public virtual void SlowUpdate()
-        {
-            if (IsDisposed)
-            {
-                return;
-            }
-
-            if (Children.Count != 0)
-            {
-                List<Control> removalList = new List<Control>(); ;
-
-                for (int i = 0; i < Children.Count; i++)
-                {
-                    if (i < 0 || i >= Children.Count)
-                    {
-                        continue;
-                    }
-
-                    Control c = Children.ElementAt(i);
-
-                    if (c == null)
-                    {
-                        continue;
-                    }
-
-                    if (c.IsDisposed)
-                    {
-                        removalList.Add(c);
-                        continue;
-                    }
-
-                    c.SlowUpdate();
-
-                }
-
-                if (removalList.Count > 0)
-                {
-                    foreach (Control c in removalList)
-                    {
-                        OnChildRemoved();
-                        Children.Remove(c);
-                    }
-                }
-
-            }
-        }
-
-        /// <summary>
-        /// Scale the width and height of this control. Width/Height * Scale
-        /// </summary>
-        /// <param name="scale"></param>
-        /// <returns>This control</returns>
-        public virtual Control ScaleWidthAndHeight(double scale)
-        {
-            if (scale != 1f)
-            {
-                Width = (int)(Width * scale);
-                Height = (int)(Height * scale);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Scale the x/y position of this control. x/y * Scale
-        /// </summary>
-        /// <param name="scale"></param>
-        /// <returns>This control</returns>
-        public virtual Control ScaleXAndY(double scale)
-        {
-            if (scale != 1f)
-            {
-                X = (int)(X * scale);
-                Y = (int)(Y * scale);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Set the internal scale used for mouse interactions or other non visual scaling
-        /// </summary>
-        /// <param name="scale"></param>
-        /// <returns>This control</returns>
-        public virtual Control SetInternalScale(double scale)
-        {
-            InternalScale = scale;
-            return this;
         }
 
         public void ForceSizeUpdate()
@@ -633,13 +507,6 @@ namespace ClassicUO.Game.UI.Controls
         public virtual void OnHitTestSuccess(int x, int y, ref Control res)
         {
         }
-
-        /// <summary>
-        /// Invoked when alpha is changed on a control
-        /// </summary>
-        /// <param name="oldValue"></param>
-        /// <param name="newValue"></param>
-        public virtual void AlphaChanged(float oldValue, float newValue) { }
 
         public Control GetFirstControlAcceptKeyboardInput()
         {
@@ -1018,12 +885,6 @@ namespace ClassicUO.Game.UI.Controls
             }
 
             IsDisposed = true;
-            AfterDispose();
         }
-
-        /// <summary>
-        /// Called after the control has been disposed.
-        /// </summary>
-        public virtual void AfterDispose() { }
     }
 }

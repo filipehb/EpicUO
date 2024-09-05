@@ -3,6 +3,7 @@ using ClassicUO.Game.Data;
 using ClassicUO.Game.GameObjects;
 using ClassicUO.Game.UI.Gumps;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -216,7 +217,6 @@ namespace ClassicUO.Game.Managers
                                 }
                                 catch (System.Exception e)
                                 {
-                                    GameActions.Print(e.Message);
                                     GameActions.Print("It looks like there was an error trying to import your override settings.", 32);
                                 }
                                 break;
@@ -225,10 +225,6 @@ namespace ClassicUO.Game.Managers
                 });
                 t.SetApartmentState(ApartmentState.STA);
                 t.Start();
-            }
-            else
-            {
-                GameActions.Print("This feature is not currently supported on Unix.", 32);
             }
         }
 
@@ -250,11 +246,6 @@ namespace ClassicUO.Game.Managers
 
             if (itemPropertiesData.HasData)
             {
-                if (EventSink.PreProcessTooltip != null)
-                {
-                    EventSink.PreProcessTooltip(ref itemPropertiesData);
-                }
-
                 tooltip += ProfileManager.CurrentProfile == null ? $"/c[yellow]{itemPropertiesData.Name}\n" : string.Format(ProfileManager.CurrentProfile.TooltipHeaderFormat + "\n", itemPropertiesData.Name);
 
                 //Loop through each property
@@ -276,22 +267,22 @@ namespace ClassicUO.Game.Managers
                                                 if (compareTo != uint.MinValue)
                                                 {
                                                     tooltip += string.Format(
-                                                        overrideData.FormattedText,
-                                                        property.Name,
-                                                        property.FirstValue.ToString(),
-                                                        property.SecondValue.ToString(),
-                                                        property.OriginalString,
-                                                        property.FirstDiff != 0 ? "(" + property.FirstDiff.ToString() + ")" : "",
-                                                        property.SecondDiff != 0 ? "(" + property.SecondDiff.ToString() + ")" : ""
+                                                        overrideData.FormattedText, 
+                                                        property.Name, 
+                                                        property.FirstValue.ToString(), 
+                                                        property.SecondValue.ToString(), 
+                                                        property.OriginalString, 
+                                                        property.FirstDiff != 0 ? "("+property.FirstDiff.ToString()+")" : "",
+                                                        property.SecondDiff != 0 ? "("+property.SecondDiff.ToString()+")" : ""
                                                         ) + "\n";
                                                 }
                                                 else
                                                 {
                                                     tooltip += string.Format(
-                                                        overrideData.FormattedText,
-                                                        property.Name,
-                                                        property.FirstValue.ToString(),
-                                                        property.SecondValue.ToString(),
+                                                        overrideData.FormattedText, 
+                                                        property.Name, 
+                                                        property.FirstValue.ToString(), 
+                                                        property.SecondValue.ToString(), 
                                                         property.OriginalString, "", ""
                                                         ) + "\n";
                                                 }
@@ -304,11 +295,6 @@ namespace ClassicUO.Game.Managers
                     }
                     if (!handled) //Did not find a matching override, need to add the plain tooltip line still
                         tooltip += $"{property.OriginalString}\n";
-                }
-
-                if (EventSink.PostProcessTooltip != null)
-                {
-                    EventSink.PostProcessTooltip(ref tooltip);
                 }
 
                 return tooltip;
@@ -348,7 +334,7 @@ namespace ClassicUO.Game.Managers
                                                 handled = true;
                                                 break;
                                             }
-                                            catch { }
+                                            catch (System.FormatException e) { }
                                         }
                             }
                     }

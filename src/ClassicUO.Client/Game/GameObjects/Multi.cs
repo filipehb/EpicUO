@@ -38,7 +38,7 @@ using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.GameObjects
 {
-    public sealed partial class Multi : GameObject
+    internal sealed partial class Multi : GameObject
     {
         private static readonly QueuedPool<Multi> _pool = new QueuedPool<Multi>
         (

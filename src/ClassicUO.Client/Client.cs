@@ -34,6 +34,7 @@ using ClassicUO.Assets;
 using ClassicUO.Configuration;
 using ClassicUO.Game;
 using ClassicUO.Game.Data;
+using ClassicUO.IO;
 using ClassicUO.Network;
 using ClassicUO.Network.Encryption;
 using ClassicUO.Resources;
@@ -59,8 +60,6 @@ namespace ClassicUO
         {
             Debug.Assert(Game == null);
 
-            ScriptCompiler.InvokeAfterCompiling("Configure");
-
             Load();
 
             Log.Trace("Running game...");
@@ -85,8 +84,6 @@ namespace ClassicUO
                 Log.Trace("Done!");
 
                 UoAssist.Start();
-
-                ScriptCompiler.InvokeAfterCompiling("Initialize");
 
                 Game.Run();
             }
@@ -201,10 +198,10 @@ namespace ClassicUO
                 EncryptionHelper.CalculateEncryption(Version);
                 Log.Trace($"encryption: {EncryptionHelper.Type}");
 
-                if (EncryptionHelper.Type != (ENCRYPTION_TYPE)Settings.GlobalSettings.Encryption)
+                if (EncryptionHelper.Type != (ENCRYPTION_TYPE) Settings.GlobalSettings.Encryption)
                 {
                     Log.Warn($"Encryption found: {EncryptionHelper.Type}");
-                    Settings.GlobalSettings.Encryption = (byte)EncryptionHelper.Type;
+                    Settings.GlobalSettings.Encryption = (byte) EncryptionHelper.Type;
                 }
             }
         }

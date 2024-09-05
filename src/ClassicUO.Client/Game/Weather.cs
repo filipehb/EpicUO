@@ -43,7 +43,7 @@ using MathHelper = Microsoft.Xna.Framework.MathHelper;
 
 namespace ClassicUO.Game
 {
-    public enum WeatherType
+    enum WeatherType
     {
         WT_RAIN = 0,
         WT_STORM_APPROACH,

@@ -30,16 +30,17 @@
 
 #endregion
 
-using ClassicUO.Assets;
+using System;
+using System.Xml;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Managers;
 using ClassicUO.Game.Scenes;
 using ClassicUO.Input;
+using ClassicUO.Assets;
 using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Xml;
+using System.Data.SqlClient;
 
 namespace ClassicUO.Game.UI.Gumps
 {
@@ -111,7 +112,7 @@ namespace ClassicUO.Game.UI.Gumps
                 _hideLabel = value;
             }
         }
-        public new float Scale
+        public float Scale
         {
             get => _scale;
             set

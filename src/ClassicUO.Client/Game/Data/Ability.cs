@@ -35,7 +35,7 @@ using System;
 namespace ClassicUO.Game.Data
 {
     [Flags]
-    public enum Ability : ushort
+    internal enum Ability : ushort
     {
         Invalid = 0xFF,
         None = 0,

@@ -39,7 +39,7 @@ using ClassicUO.Utility;
 
 namespace ClassicUO.Game.Map
 {
-    public sealed class Chunk
+    internal sealed class Chunk
     {
         private static readonly QueuedPool<Chunk> _pool = new QueuedPool<Chunk>
         (

@@ -31,10 +31,11 @@
 #endregion
 
 using ClassicUO.Renderer;
+using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public class ScissorControl : Control
+    internal class ScissorControl : Control
     {
         public ScissorControl(bool enabled, int x, int y, int width, int height) : this(enabled)
         {

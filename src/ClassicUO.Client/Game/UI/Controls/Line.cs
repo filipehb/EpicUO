@@ -39,7 +39,6 @@ namespace ClassicUO.Game.UI.Controls
     internal class Line : Control
     {
         private readonly Texture2D _texture;
-        private Vector3 hueVector = ShaderHueTranslator.GetHueVector(0, false, 1f);
 
         public Line(int x, int y, int w, int h, uint color)
         {
@@ -51,14 +50,10 @@ namespace ClassicUO.Game.UI.Controls
             _texture = SolidColorTextureCache.GetTexture(new Color { PackedValue = color });
         }
 
-        public override void SlowUpdate()
-        {
-            base.SlowUpdate();
-            hueVector = ShaderHueTranslator.GetHueVector(0, false, Alpha);
-        }
-
         public override bool Draw(UltimaBatcher2D batcher, int x, int y)
         {
+            Vector3 hueVector = ShaderHueTranslator.GetHueVector(0, false, Alpha);
+
             batcher.Draw
             (
                 _texture,

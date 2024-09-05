@@ -30,20 +30,22 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using ClassicUO.Input;
+using ClassicUO.Assets;
 using ClassicUO.Renderer;
 using ClassicUO.Utility;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public class Checkbox : Control
+    internal class Checkbox : Control
     {
         private bool _isChecked;
         private readonly RenderedText _text;
-        private readonly ushort _inactive, _active;
+        private ushort _inactive,
+            _active;
 
         public Checkbox(
             ushort inactive,

@@ -30,15 +30,17 @@
 
 #endregion
 
-using ClassicUO.Assets;
-using ClassicUO.Game.Data;
-using ClassicUO.Utility;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using ClassicUO.Game.Data;
+using ClassicUO.Assets;
+using ClassicUO.Utility;
+using static ClassicUO.Game.Constants;
 
 namespace ClassicUO.Game.GameObjects
 {
-    public partial class Mobile
+    internal partial class Mobile
     {
         private static readonly ushort[] HANDS_BASE_ANIMID =
         {
@@ -87,11 +89,11 @@ namespace ClassicUO.Game.GameObjects
             {
                 case 0x0192:
                 case 0x0193:
-                    {
-                        g -= 2;
+                {
+                    g -= 2;
 
-                        break;
-                    }
+                    break;
+                }
 
                 case 0x02B6:
                     g = 667;
@@ -100,6 +102,18 @@ namespace ClassicUO.Game.GameObjects
 
                 case 0x02B7:
                     g = 666;
+
+                    break;
+
+                case DWARF_ID_F:
+                case ELF_ID_F:
+                case ORC_ID_F:
+                case WOLF_ID_F:
+                case DWARF_ID_M:
+                case ELF_ID_M:
+                case ORC_ID_M:
+                case WOLF_ID_M:
+                    g = g;
 
                     break;
             }
@@ -123,7 +137,7 @@ namespace ClassicUO.Game.GameObjects
         private static void CalculateHight(
             ushort graphic,
             Mobile mobile,
-            AnimationFlags flags,
+            AnimationFlags  flags,
             bool isrun,
             bool iswalking,
             ref byte result
@@ -222,7 +236,7 @@ namespace ClassicUO.Game.GameObjects
             }
         }
 
-        private static void LABEL_222(AnimationFlags flags, ref ushort v13)
+        private static void LABEL_222(AnimationFlags  flags, ref ushort v13)
         {
             if ((flags & AnimationFlags.CalculateOffsetLowGroupExtended) != 0)
             {
@@ -364,7 +378,7 @@ namespace ClassicUO.Game.GameObjects
             //    v13 = 0;
         }
 
-        private static void LABEL_190(AnimationFlags flags, ref ushort v13)
+        private static void LABEL_190(AnimationFlags  flags, ref ushort v13)
         {
             if ((flags & AnimationFlags.Unknown80) != 0 && v13 == 4)
             {
@@ -567,7 +581,7 @@ namespace ClassicUO.Game.GameObjects
             AnimationGroupsType originalType = Client.Game.Animations.GetAnimType(graphic);
             Client.Game.Animations.ConvertBodyIfNeeded(ref graphic, isParent);
             AnimationGroupsType type = Client.Game.Animations.GetAnimType(graphic);
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(graphic);
 
             bool uop = (flags & AnimationFlags.UseUopAnimation) != 0;
 
@@ -1050,12 +1064,12 @@ namespace ClassicUO.Game.GameObjects
                         return (byte)v13;
                 }
 
-                //// LABEL_188
-                //v13 = 2;
+                // LABEL_188
+                v13 = 2;
 
-                //LABEL_190(flags, ref v13);
+                LABEL_190(flags, ref v13);
 
-                //return (byte)v13;
+                return (byte)v13;
             }
 
             byte result = mobile._animationGroup;
@@ -1161,167 +1175,242 @@ namespace ClassicUO.Game.GameObjects
                     break;
 
                 default:
+                {
+                    Item hand2 = mobile.FindItemByLayer(Layer.TwoHanded);
+
+                    if (!isWalking)
                     {
-                        Item hand2 = mobile.FindItemByLayer(Layer.TwoHanded);
-
-                        if (!isWalking)
+                        if (result == 0xFF)
                         {
-                            if (result == 0xFF)
+                            bool haveLightAtHand2 =
+                                hand2 != null
+                                && hand2.ItemData.IsLight
+                                && hand2.ItemData.AnimID == graphic;
+
+                            if (mobile.IsMounted)
                             {
-                                bool haveLightAtHand2 =
-                                    hand2 != null
-                                    && hand2.ItemData.IsLight
-                                    && hand2.ItemData.AnimID == graphic;
-
-                                if (mobile.IsMounted)
+                                if (haveLightAtHand2)
                                 {
-                                    if (haveLightAtHand2)
-                                    {
-                                        result = 28;
-                                    }
-                                    else
-                                    {
-                                        result = 25;
-                                    }
-                                }
-                                else if (mobile.IsGargoyle && mobile.IsFlying) // TODO: what's up when it is dead?
-                                {
-                                    if (mobile.InWarMode)
-                                    {
-                                        result = 65;
-                                    }
-                                    else
-                                    {
-                                        result = 64;
-                                    }
-                                }
-                                else if (!mobile.InWarMode || mobile.IsDead)
-                                {
-                                    if (haveLightAtHand2)
-                                    {
-                                        // TODO: UOP EQUIPMENT ?
-                                        result = 0;
-                                    }
-                                    else
-                                    {
-                                        if (
-                                            uop
-                                            && type == AnimationGroupsType.Equipment
-                                            && Client.Game.Animations.AnimationExists(graphic, 37)
-                                        )
-                                        {
-                                            result = 37;
-                                        }
-                                        else
-                                        {
-                                            result = 4;
-                                        }
-                                    }
-                                }
-                                else if (haveLightAtHand2)
-                                {
-                                    // TODO: UOP EQUIPMENT ?
-
-                                    result = 2;
+                                    result = 28;
                                 }
                                 else
                                 {
-                                    unsafe
+                                    result = 25;
+                                }
+                            }
+                            else if (mobile.IsGargoyle && mobile.IsFlying) // TODO: what's up when it is dead?
+                            {
+                                if (mobile.InWarMode)
+                                {
+                                    result = 65;
+                                }
+                                else
+                                {
+                                    result = 64;
+                                }
+                            }
+                            else if (!mobile.InWarMode || mobile.IsDead)
+                            {
+                                if (haveLightAtHand2)
+                                {
+                                    // TODO: UOP EQUIPMENT ?
+                                    result = 0;
+                                }
+                                else
+                                {
+                                    if (
+                                        uop
+                                        && type == AnimationGroupsType.Equipment
+                                        && Client.Game.Animations.AnimationExists(graphic, 37)
+                                    )
                                     {
-                                        ushort* handAnimIDs = stackalloc ushort[2];
-                                        Item hand1 = mobile.FindItemByLayer(Layer.OneHanded);
+                                        result = 37;
+                                    }
+                                    else
+                                    {
+                                        result = 4;
+                                    }
+                                }
+                            }
+                            else if (haveLightAtHand2)
+                            {
+                                // TODO: UOP EQUIPMENT ?
 
-                                        if (hand1 != null)
-                                        {
-                                            handAnimIDs[0] = hand1.ItemData.AnimID;
-                                        }
+                                result = 2;
+                            }
+                            else
+                            {
+                                unsafe
+                                {
+                                    ushort* handAnimIDs = stackalloc ushort[2];
+                                    Item hand1 = mobile.FindItemByLayer(Layer.OneHanded);
 
+                                    if (hand1 != null)
+                                    {
+                                        handAnimIDs[0] = hand1.ItemData.AnimID;
+                                    }
+
+                                    if (hand2 != null)
+                                    {
+                                        handAnimIDs[1] = hand2.ItemData.AnimID;
+                                    }
+
+                                    if (hand1 == null)
+                                    {
                                         if (hand2 != null)
                                         {
-                                            handAnimIDs[1] = hand2.ItemData.AnimID;
-                                        }
-
-                                        if (hand1 == null)
-                                        {
-                                            if (hand2 != null)
-                                            {
-                                                if (
-                                                    uop
-                                                    && type == AnimationGroupsType.Equipment
-                                                    && !Client.Game.Animations.AnimationExists(
-                                                        graphic,
-                                                        7
-                                                    )
+                                            if (
+                                                uop
+                                                && type == AnimationGroupsType.Equipment
+                                                && !Client.Game.Animations.AnimationExists(
+                                                    graphic,
+                                                    7
                                                 )
-                                                {
-                                                    result = 8;
-                                                }
-                                                else
-                                                {
-                                                    result = 7;
-                                                }
-
-                                                for (int i = 0; i < 2; i++)
-                                                {
-                                                    if (
-                                                        handAnimIDs[i] >= 0x0263
-                                                        && handAnimIDs[i] <= 0x028B
-                                                    )
-                                                    {
-                                                        for (
-                                                            int k = 0;
-                                                            k < HANDS_BASE_ANIMID.Length;
-                                                            k++
-                                                        )
-                                                        {
-                                                            if (handAnimIDs[i] == HANDS_BASE_ANIMID[k])
-                                                            {
-                                                                result = 8;
-                                                                i = 2;
-
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else if (mobile.IsGargoyle && mobile.IsFlying)
+                                            )
                                             {
-                                                result = 64;
+                                                result = 8;
                                             }
                                             else
                                             {
                                                 result = 7;
                                             }
+
+                                            for (int i = 0; i < 2; i++)
+                                            {
+                                                if (
+                                                    handAnimIDs[i] >= 0x0263
+                                                    && handAnimIDs[i] <= 0x028B
+                                                )
+                                                {
+                                                    for (
+                                                        int k = 0;
+                                                        k < HANDS_BASE_ANIMID.Length;
+                                                        k++
+                                                    )
+                                                    {
+                                                        if (handAnimIDs[i] == HANDS_BASE_ANIMID[k])
+                                                        {
+                                                            result = 8;
+                                                            i = 2;
+
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (mobile.IsGargoyle && mobile.IsFlying)
+                                        {
+                                            result = 64;
                                         }
                                         else
                                         {
                                             result = 7;
                                         }
                                     }
+                                    else
+                                    {
+                                        result = 7;
+                                    }
                                 }
                             }
                         }
-                        else if (mobile.IsMounted)
+                    }
+                    else if (mobile.IsMounted)
+                    {
+                        if (isRun)
                         {
-                            if (isRun)
+                            result = 24;
+                        }
+                        else
+                        {
+                            result = 23;
+                        }
+                    }
+                    //else if (EquippedGraphic0x3E96)
+                    //{
+
+                    //}
+                    else if (isRun || !mobile.InWarMode || mobile.IsDead)
+                    {
+                        if ((flags & AnimationFlags.UseUopAnimation) != 0)
+                        {
+                            // i'm not sure here if it's necessary the isgargoyle
+                            if (mobile.IsGargoyle && mobile.IsFlying)
                             {
-                                result = 24;
+                                if (isRun)
+                                {
+                                    result = 63;
+                                }
+                                else
+                                {
+                                    result = 62;
+                                }
                             }
                             else
                             {
-                                result = 23;
+                                if (isRun && Client.Game.Animations.AnimationExists(graphic, 24))
+                                {
+                                    result = 24;
+                                }
+                                else
+                                {
+                                    if (isRun)
+                                    {
+                                        if (
+                                            uop
+                                            && type == AnimationGroupsType.Equipment
+                                            && !Client.Game.Animations.AnimationExists(graphic, 2)
+                                        )
+                                        {
+                                            result = 3;
+                                        }
+                                        else
+                                        {
+                                            result = 2;
+
+                                            if (mobile.IsGargoyle)
+                                            {
+                                                hand2 = mobile.FindItemByLayer(Layer.OneHanded);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (
+                                            uop
+                                            && type == AnimationGroupsType.Equipment
+                                            && !Client.Game.Animations.AnimationExists(graphic, 0)
+                                        )
+                                        {
+                                            result = 1;
+                                        }
+                                        else
+                                        {
+                                            result = 0;
+                                        }
+                                    }
+                                }
                             }
                         }
-                        //else if (EquippedGraphic0x3E96)
-                        //{
-
-                        //}
-                        else if (isRun || !mobile.InWarMode || mobile.IsDead)
+                        else
                         {
-                            if ((flags & AnimationFlags.UseUopAnimation) != 0)
+                            if (isRun)
                             {
-                                // i'm not sure here if it's necessary the isgargoyle
+                                result = (byte)(hand2 != null ? 3 : 2);
+                            }
+                            else
+                            {
+                                result = (byte)(hand2 != null ? 1 : 0);
+                            }
+                        }
+
+                        if (hand2 != null)
+                        {
+                            ushort hand2Graphic = hand2.ItemData.AnimID;
+
+                            if (hand2Graphic < 0x0240 || hand2Graphic > 0x03E1)
+                            {
                                 if (mobile.IsGargoyle && mobile.IsFlying)
                                 {
                                     if (isRun)
@@ -1335,137 +1424,62 @@ namespace ClassicUO.Game.GameObjects
                                 }
                                 else
                                 {
-                                    if (isRun && Client.Game.Animations.AnimationExists(graphic, 24))
+                                    if (isRun)
                                     {
-                                        result = 24;
+                                        result = 3;
                                     }
                                     else
                                     {
-                                        if (isRun)
-                                        {
-                                            if (
-                                                uop
-                                                && type == AnimationGroupsType.Equipment
-                                                && !Client.Game.Animations.AnimationExists(graphic, 2)
-                                            )
-                                            {
-                                                result = 3;
-                                            }
-                                            else
-                                            {
-                                                result = 2;
-
-                                                if (mobile.IsGargoyle)
-                                                {
-                                                    hand2 = mobile.FindItemByLayer(Layer.OneHanded);
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (
-                                                uop
-                                                && type == AnimationGroupsType.Equipment
-                                                && !Client.Game.Animations.AnimationExists(graphic, 0)
-                                            )
-                                            {
-                                                result = 1;
-                                            }
-                                            else
-                                            {
-                                                result = 0;
-                                            }
-                                        }
+                                        result = 1;
                                     }
                                 }
                             }
                             else
                             {
-                                if (isRun)
+                                for (int i = 0; i < HAND2_BASE_ANIMID.Length; i++)
                                 {
-                                    result = (byte)(hand2 != null ? 3 : 2);
-                                }
-                                else
-                                {
-                                    result = (byte)(hand2 != null ? 1 : 0);
-                                }
-                            }
-
-                            if (hand2 != null)
-                            {
-                                ushort hand2Graphic = hand2.ItemData.AnimID;
-
-                                if (hand2Graphic < 0x0240 || hand2Graphic > 0x03E1)
-                                {
-                                    if (mobile.IsGargoyle && mobile.IsFlying)
+                                    if (HAND2_BASE_ANIMID[i] == hand2Graphic)
                                     {
-                                        if (isRun)
+                                        if (mobile.IsGargoyle && mobile.IsFlying)
                                         {
-                                            result = 63;
-                                        }
-                                        else
-                                        {
-                                            result = 62;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (isRun)
-                                        {
-                                            result = 3;
-                                        }
-                                        else
-                                        {
-                                            result = 1;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    for (int i = 0; i < HAND2_BASE_ANIMID.Length; i++)
-                                    {
-                                        if (HAND2_BASE_ANIMID[i] == hand2Graphic)
-                                        {
-                                            if (mobile.IsGargoyle && mobile.IsFlying)
+                                            if (isRun)
                                             {
-                                                if (isRun)
-                                                {
-                                                    result = 63;
-                                                }
-                                                else
-                                                {
-                                                    result = 62;
-                                                }
+                                                result = 63;
                                             }
                                             else
                                             {
-                                                if (isRun)
-                                                {
-                                                    result = 3;
-                                                }
-                                                else
-                                                {
-                                                    result = 1;
-                                                }
+                                                result = 62;
                                             }
-
-                                            break;
                                         }
+                                        else
+                                        {
+                                            if (isRun)
+                                            {
+                                                result = 3;
+                                            }
+                                            else
+                                            {
+                                                result = 1;
+                                            }
+                                        }
+
+                                        break;
                                     }
                                 }
                             }
                         }
-                        else if (mobile.IsGargoyle && mobile.IsFlying)
-                        {
-                            result = 62;
-                        }
-                        else
-                        {
-                            result = 15;
-                        }
-
-                        break;
                     }
+                    else if (mobile.IsGargoyle && mobile.IsFlying)
+                    {
+                        result = 62;
+                    }
+                    else
+                    {
+                        result = 15;
+                    }
+
+                    break;
+                }
             }
 
             return result;
@@ -1624,7 +1638,7 @@ namespace ClassicUO.Game.GameObjects
         {
             if (action <= 10)
             {
-                AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+                AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
                 AnimationGroupsType type = AnimationGroupsType.Monster;
 
                 if ((flags & AnimationFlags.Found) != 0)
@@ -1758,7 +1772,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_1_2(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -1787,7 +1801,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_3(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -1831,7 +1845,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_4(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -1869,7 +1883,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_5(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -1917,7 +1931,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_6_14(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -1974,7 +1988,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_8(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -2003,7 +2017,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_9(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -2030,7 +2044,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_10(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)
@@ -2057,7 +2071,7 @@ namespace ClassicUO.Game.GameObjects
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static byte GetObjectNewAnimationType_11(Mobile mobile, ushort action, byte mode)
         {
-            AnimationFlags flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
+            AnimationFlags  flags = Client.Game.Animations.GetAnimFlags(mobile.Graphic);
             AnimationGroupsType type = AnimationGroupsType.Monster;
 
             if ((flags & AnimationFlags.Found) != 0)

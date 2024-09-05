@@ -15,189 +15,189 @@ using Color = FontStashSharp.FSColor;
 
 namespace FontStashSharp.RichText
 {
-    public class RichTextLayout
-    {
-        private SpriteFontBase _font;
-        private string _text = string.Empty;
-        private int? _width;
-        private Point _size;
-        private bool _dirty = true;
-        private readonly Dictionary<int, Point> _measures = new Dictionary<int, Point>();
+	public class RichTextLayout
+	{
+		private SpriteFontBase _font;
+		private string _text = string.Empty;
+		private int? _width;
+		private Point _size;
+		private bool _dirty = true;
+		private readonly Dictionary<int, Point> _measures = new Dictionary<int, Point>();
         private readonly LayoutBuilder _layoutBuilder;
-        private readonly FSRenderContext _renderContext = new FSRenderContext();
+		private readonly FSRenderContext _renderContext = new FSRenderContext();
 
-        public SpriteFontBase Font
-        {
-            get
-            {
-                return _font;
-            }
-            set
-            {
-                if (value == _font)
-                {
-                    return;
-                }
+		public SpriteFontBase Font
+		{
+			get
+			{
+				return _font;
+			}
+			set
+			{
+				if (value == _font)
+				{
+					return;
+				}
 
-                _font = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_font = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
-        public string Text
-        {
-            get
-            {
-                return _text;
-            }
-            set
-            {
-                if (value == _text)
-                {
-                    return;
-                }
+		public string Text
+		{
+			get
+			{
+				return _text;
+			}
+			set
+			{
+				if (value == _text)
+				{
+					return;
+				}
 
-                _text = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_text = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
-        public int VerticalSpacing
-        {
-            get
-            {
-                return _layoutBuilder.VerticalSpacing;
-            }
+		public int VerticalSpacing
+		{
+			get
+			{
+				return _layoutBuilder.VerticalSpacing;
+			}
 
-            set
-            {
-                if (value == _layoutBuilder.VerticalSpacing)
-                {
-                    return;
-                }
+			set
+			{
+				if (value == _layoutBuilder.VerticalSpacing)
+				{
+					return;
+				}
 
-                _layoutBuilder.VerticalSpacing = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_layoutBuilder.VerticalSpacing = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
-        public int? Width
-        {
-            get
-            {
-                return _width;
-            }
-            set
-            {
-                if (value == _width)
-                {
-                    return;
-                }
+		public int? Width
+		{
+			get
+			{
+				return _width;
+			}
+			set
+			{
+				if (value == _width)
+				{
+					return;
+				}
 
-                _width = value;
-                InvalidateLayout();
-            }
-        }
+				_width = value;
+				InvalidateLayout();
+			}
+		}
 
-        public List<TextLine> Lines
-        {
-            get
-            {
-                Update();
-                return _layoutBuilder.Lines;
-            }
-        }
+		public List<TextLine> Lines
+		{
+			get
+			{
+				Update();
+				return _layoutBuilder.Lines;
+			}
+		}
 
-        public Point Size
-        {
-            get
-            {
-                Update();
-                return _size;
-            }
-        }
+		public Point Size
+		{
+			get
+			{
+				Update();
+				return _size;
+			}
+		}
 
-        public bool CalculateGlyphs
-        {
-            get
-            {
-                return _layoutBuilder.CalculateGlyphs;
-            }
+		public bool CalculateGlyphs
+		{
+			get
+			{
+				return _layoutBuilder.CalculateGlyphs;
+			}
 
-            set
-            {
-                if (value == _layoutBuilder.CalculateGlyphs)
-                {
-                    return;
-                }
+			set
+			{
+				if (value == _layoutBuilder.CalculateGlyphs)
+				{
+					return;
+				}
 
-                _layoutBuilder.CalculateGlyphs = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_layoutBuilder.CalculateGlyphs = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
-        public bool SupportsCommands
-        {
-            get
-            {
-                return _layoutBuilder.SupportsCommands;
-            }
+		public bool SupportsCommands
+		{
+			get
+			{
+				return _layoutBuilder.SupportsCommands;
+			}
 
-            set
-            {
-                if (value == _layoutBuilder.SupportsCommands)
-                {
-                    return;
-                }
+			set
+			{
+				if (value == _layoutBuilder.SupportsCommands)
+				{
+					return;
+				}
 
-                _layoutBuilder.SupportsCommands = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_layoutBuilder.SupportsCommands = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
-        public bool ShiftByTop
-        {
-            get
-            {
-                return _layoutBuilder.ShiftByTop;
-            }
+		public bool ShiftByTop
+		{
+			get
+			{
+				return _layoutBuilder.ShiftByTop;
+			}
 
-            set
-            {
-                if (value == _layoutBuilder.ShiftByTop)
-                {
-                    return;
-                }
+			set
+			{
+				if (value == _layoutBuilder.ShiftByTop)
+				{
+					return;
+				}
 
-                _layoutBuilder.ShiftByTop = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_layoutBuilder.ShiftByTop = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
-        public bool IgnoreColorCommand { get; set; } = false;
+		public bool IgnoreColorCommand { get; set; } = false;
 
-        public char CommandPrefix
-        {
-            get => _layoutBuilder.CommandPrefix;
+		public char CommandPrefix
+		{
+			get => _layoutBuilder.CommandPrefix;
 
-            set
-            {
-                if (value == _layoutBuilder.CommandPrefix)
-                {
-                    return;
-                }
+			set
+			{
+				if (value == _layoutBuilder.CommandPrefix)
+				{
+					return;
+				}
 
-                _layoutBuilder.CommandPrefix = value;
-                InvalidateLayout();
-                InvalidateMeasures();
-            }
-        }
+				_layoutBuilder.CommandPrefix = value;
+				InvalidateLayout();
+				InvalidateMeasures();
+			}
+		}
 
         public RichTextLayout()
         {
@@ -210,200 +210,189 @@ namespace FontStashSharp.RichText
         }
 
         private static int GetMeasureKey(int? width)
-        {
-            return width != null ? width.Value : -1;
-        }
+		{
+			return width != null ? width.Value : -1;
+		}
 
-        private void Update()
-        {
-            if (!_dirty)
-            {
-                return;
-            }
-            try
-            {
-                _size = _layoutBuilder.Layout(Text, Font, Width);
-            }
-            catch
-            {
-            }
+		private void Update()
+		{
+			if (!_dirty)
+			{
+				return;
+			}
 
-            var key = GetMeasureKey(Width);
-            _measures[key] = _size;
+			_size = _layoutBuilder.Layout(Text, Font, Width);
 
-            _dirty = false;
-        }
+			var key = GetMeasureKey(Width);
+			_measures[key] = _size;
 
-        public Point Measure(int? width)
-        {
-            var result = Utility.PointZero;
+			_dirty = false;
+		}
 
-            var key = GetMeasureKey(width);
-            if (_measures.TryGetValue(key, out result))
-            {
-                return result;
-            }
+		public Point Measure(int? width)
+		{
+			var result = Utility.PointZero;
 
-            try
-            {
-                result = _layoutBuilder.Layout(Text, Font, width, true);
-                _measures[key] = result;
-            }
-            catch
-            {
-            }
+			var key = GetMeasureKey(width);
+			if (_measures.TryGetValue(key, out result))
+			{
+				return result;
+			}
 
-            return result;
-        }
+			result = _layoutBuilder.Layout(Text, Font, width, true);
+			_measures[key] = result;
 
-        public TextLine GetLineByCursorPosition(int cursorPosition)
-        {
-            Update();
+			return result;
+		}
 
-            if (Lines.Count == 0)
-            {
-                return null;
-            }
+		public TextLine GetLineByCursorPosition(int cursorPosition)
+		{
+			Update();
 
-            if (cursorPosition < 0)
-            {
-                return Lines[0];
-            }
+			if (Lines.Count == 0)
+			{
+				return null;
+			}
 
-            for (var i = 0; i < Lines.Count; ++i)
-            {
-                var s = Lines[i];
-                if (s.TextStartIndex <= cursorPosition && cursorPosition < s.TextStartIndex + s.Count)
-                {
-                    return s;
-                }
-            }
+			if (cursorPosition < 0)
+			{
+				return Lines[0];
+			}
 
-            return Lines[Lines.Count - 1];
-        }
+			for (var i = 0; i < Lines.Count; ++i)
+			{
+				var s = Lines[i];
+				if (s.TextStartIndex <= cursorPosition && cursorPosition < s.TextStartIndex + s.Count)
+				{
+					return s;
+				}
+			}
 
-        public TextLine GetLineByY(int y)
-        {
-            if (string.IsNullOrEmpty(_text) || y < 0)
-            {
-                return null;
-            }
+			return Lines[Lines.Count - 1];
+		}
 
-            Update();
+		public TextLine GetLineByY(int y)
+		{
+			if (string.IsNullOrEmpty(_text) || y < 0)
+			{
+				return null;
+			}
 
-            var py = 0;
-            for (var i = 0; i < Lines.Count; ++i)
-            {
-                var s = Lines[i];
+			Update();
 
-                if (py <= y && y < py + s.Size.Y)
-                {
-                    return s;
-                }
+			var py = 0;
+			for (var i = 0; i < Lines.Count; ++i)
+			{
+				var s = Lines[i];
 
-                py += s.Size.Y;
-                py += VerticalSpacing;
-            }
+				if (py <= y && y < py + s.Size.Y)
+				{
+					return s;
+				}
 
-            return null;
-        }
+				py += s.Size.Y;
+				py += VerticalSpacing;
+			}
 
-        public TextChunkGlyph? GetGlyphInfoByIndex(int charIndex)
-        {
-            var strings = Lines;
+			return null;
+		}
 
-            foreach (var si in strings)
-            {
-                if (charIndex >= si.Count)
-                {
-                    charIndex -= si.Count;
-                }
-                else
-                {
-                    return si.GetGlyphInfoByIndex(charIndex);
-                }
-            }
+		public TextChunkGlyph? GetGlyphInfoByIndex(int charIndex)
+		{
+			var strings = Lines;
 
-            return null;
-        }
+			foreach (var si in strings)
+			{
+				if (charIndex >= si.Count)
+				{
+					charIndex -= si.Count;
+				}
+				else
+				{
+					return si.GetGlyphInfoByIndex(charIndex);
+				}
+			}
 
-        private void Draw(Vector2 position, Color color, Vector2? sourceScale,
-            float rotation, Vector2 origin, float layerDepth, TextHorizontalAlignment horizontalAlignment)
-        {
-            Update();
+			return null;
+		}
 
-            var scale = sourceScale ?? Utility.DefaultScale;
-            _renderContext.Prepare(position, scale, rotation, origin, layerDepth);
+		private void Draw(Vector2 position, Color color, Vector2? sourceScale,
+			float rotation, Vector2 origin, float layerDepth, TextHorizontalAlignment horizontalAlignment)
+		{
+			Update();
 
-            var pos = Utility.Vector2Zero;
-            foreach (var line in Lines)
-            {
-                pos.X = 0;
+			var scale = sourceScale ?? Utility.DefaultScale;
+			_renderContext.Prepare(position, scale, rotation, origin, layerDepth);
 
-                if (horizontalAlignment == TextHorizontalAlignment.Center)
-                {
-                    pos.X -= line.Size.X / 2;
-                }
-                else if (horizontalAlignment == TextHorizontalAlignment.Right)
-                {
-                    pos.X -= line.Size.X;
-                }
-                foreach (var chunk in line.Chunks)
-                {
-                    var chunkColor = color;
-                    if (!IgnoreColorCommand && chunk.Color != null)
-                    {
-                        chunkColor = chunk.Color.Value;
-                    }
+			var pos = Utility.Vector2Zero;
+			foreach (var line in Lines)
+			{
+				pos.X = 0;
 
-                    chunk.Draw(_renderContext, pos + new Vector2(0, chunk.VerticalOffset), chunkColor);
-                    pos.X += chunk.Size.X;
-                }
+				if (horizontalAlignment == TextHorizontalAlignment.Center)
+				{
+					pos.X -= line.Size.X / 2;
+				}
+				else if (horizontalAlignment == TextHorizontalAlignment.Right)
+				{
+					pos.X -= line.Size.X;
+				}
+				foreach (var chunk in line.Chunks)
+				{
+					var chunkColor = color;
+					if (!IgnoreColorCommand && chunk.Color != null)
+					{
+						chunkColor = chunk.Color.Value;
+					}
 
-                pos.Y += line.Size.Y;
-                pos.Y += VerticalSpacing;
-            }
-        }
+					chunk.Draw(_renderContext, pos + new Vector2(0, chunk.VerticalOffset), chunkColor);
+					pos.X += chunk.Size.X;
+				}
 
-        public void Draw(IFontStashRenderer renderer, Vector2 position, Color color,
-            Vector2? sourceScale = null, float rotation = 0,
-            Vector2 origin = default(Vector2), float layerDepth = 0.0f,
-            TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left)
-        {
-            _renderContext.SetRenderer(renderer);
-            Draw(position, color, sourceScale, rotation, origin, layerDepth, horizontalAlignment);
-        }
+				pos.Y += line.Size.Y;
+				pos.Y += VerticalSpacing;
+			}
+		}
 
-        public void Draw(IFontStashRenderer2 renderer, Vector2 position, Color color,
-            Vector2? sourceScale = null, float rotation = 0,
-            Vector2 origin = default(Vector2), float layerDepth = 0.0f,
-            TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left)
-        {
-            _renderContext.SetRenderer(renderer);
-            Draw(position, color, sourceScale, rotation, origin, layerDepth, horizontalAlignment);
-        }
+		public void Draw(IFontStashRenderer renderer, Vector2 position, Color color,
+			Vector2? sourceScale = null, float rotation = 0,
+			Vector2 origin = default(Vector2), float layerDepth = 0.0f,
+			TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left)
+		{
+			_renderContext.SetRenderer(renderer);
+			Draw(position, color, sourceScale, rotation, origin, layerDepth, horizontalAlignment);
+		}
+
+		public void Draw(IFontStashRenderer2 renderer, Vector2 position, Color color,
+			Vector2? sourceScale = null, float rotation = 0,
+			Vector2 origin = default(Vector2), float layerDepth = 0.0f,
+			TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left)
+		{
+			_renderContext.SetRenderer(renderer);
+			Draw(position, color, sourceScale, rotation, origin, layerDepth, horizontalAlignment);
+		}
 
 #if MONOGAME || FNA || STRIDE
 
-        public void Draw(SpriteBatch batch, Vector2 position, Color color,
-            Vector2? scale = null, float rotation = 0, Vector2 origin = default(Vector2),
-            float layerDepth = 0.0f, TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left)
-        {
-            var renderer = SpriteBatchRenderer.Instance;
-            renderer.Batch = batch;
-            Draw(renderer, position, color, scale, rotation, origin, layerDepth, horizontalAlignment);
-        }
+		public void Draw(SpriteBatch batch, Vector2 position, Color color,
+			Vector2? scale = null, float rotation = 0, Vector2 origin = default(Vector2),
+			float layerDepth = 0.0f, TextHorizontalAlignment horizontalAlignment = TextHorizontalAlignment.Left)
+		{
+			var renderer = SpriteBatchRenderer.Instance;
+			renderer.Batch = batch;
+			Draw(renderer, position, color, scale, rotation, origin, layerDepth, horizontalAlignment);
+		}
 
 #endif
 
-        private void InvalidateLayout()
-        {
-            _dirty = true;
-        }
+		private void InvalidateLayout()
+		{
+			_dirty = true;
+		}
 
-        private void InvalidateMeasures()
-        {
-            _measures.Clear();
-        }
-    }
+		private void InvalidateMeasures()
+		{
+			_measures.Clear();
+		}
+	}
 }

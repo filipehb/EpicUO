@@ -30,14 +30,6 @@
 
 #endregion
 
-using ClassicUO.Configuration.Json;
-using ClassicUO.Game;
-using ClassicUO.Game.Data;
-using ClassicUO.Game.GameObjects;
-using ClassicUO.Game.Managers;
-using ClassicUO.Game.UI.Gumps;
-using ClassicUO.Utility.Logging;
-using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,6 +38,14 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml;
+using ClassicUO.Configuration.Json;
+using ClassicUO.Game;
+using ClassicUO.Game.Data;
+using ClassicUO.Game.GameObjects;
+using ClassicUO.Game.Managers;
+using ClassicUO.Game.UI.Gumps;
+using ClassicUO.Utility.Logging;
+using Microsoft.Xna.Framework;
 
 namespace ClassicUO.Configuration
 {
@@ -77,7 +77,7 @@ namespace ClassicUO.Configuration
 
 
 
-    public sealed class Profile
+    internal sealed class Profile
     {
         [JsonIgnore] public string Username { get; set; }
         [JsonIgnore] public string ServerName { get; set; }
@@ -128,7 +128,6 @@ namespace ClassicUO.Configuration
         public ushort InvulnerableHue { get; set; } = 0x0030;
         public ushort AltJournalBackgroundHue { get; set; } = 0x0000;
         public ushort AltGridContainerBackgroundHue { get; set; } = 0x0000;
-        public bool OverridePartyAndGuildHue { get; set; } = false;
 
         // visual
         public bool EnabledCriminalActionQuery { get; set; } = true;
@@ -142,7 +141,6 @@ namespace ClassicUO.Configuration
         public bool HighlightMobilesByPoisoned { get; set; } = true;
         public bool HighlightMobilesByInvul { get; set; } = true;
         public bool ShowMobilesHP { get; set; }
-        public bool ShowTargetIndicator { get; set; }
         public int MobileHPType { get; set; }     // 0 = %, 1 = line, 2 = both
         public int MobileHPShowWhen { get; set; } // 0 = Always, 1 - <100%
         public bool DrawRoofs { get; set; } = true;
@@ -216,6 +214,13 @@ namespace ClassicUO.Configuration
         public bool UseModernPaperdoll { get; set; } = false;
         public bool OpenModernPaperdollAtMinimizeLoc { get; set; } = false;
 
+        // ## BEGIN - END ## tabgrid // PKRION
+        public bool TabGridGumpEnabled { get; set; }
+        public int GridTabs { get; set; } = 1;
+        public int GridRows { get; set; } = 1;
+        public string TabList { get; set; } = "tab1:tab2:tab3";
+        // ## BEGIN - END ## // PKRION
+
         // Experimental
         public bool CastSpellsByOneClick { get; set; }
         public bool BuffBarTime { get; set; }
@@ -232,12 +237,13 @@ namespace ClassicUO.Configuration
         public bool DisableCtrlQWBtn { get; set; }
         public bool DisableAutoMove { get; set; }
         public bool EnableDragSelect { get; set; }
-        public int DragSelectModifierKey { get; set; } // 0 = none, 1 = control, 2 = shift, 3 = alt
+        public int DragSelectModifierKey { get; set; } // 0 = none, 1 = control, 2 = shift
         public int DragSelect_PlayersModifier { get; set; } = 0;
         public int DragSelect_MonstersModifier { get; set; } = 0;
         public int DragSelect_NameplateModifier { get; set; } = 0;
         public bool OverrideContainerLocation { get; set; }
 
+        public bool OldJournal { get; set; } = false;
         public int OverrideContainerLocationSetting { get; set; } // 0 = container position, 1 = top right of screen, 2 = last dragged position, 3 = remember every container
 
         [JsonConverter(typeof(Point2Converter))] public Point OverrideContainerLocationPosition { get; set; } = new Point(200, 200);
@@ -250,7 +256,7 @@ namespace ClassicUO.Configuration
         public bool NameOverheadToggled { get; set; } = false;
         public bool ShowTargetRangeIndicator { get; set; }
         public bool PartyInviteGump { get; set; }
-        public bool CustomBarsToggled { get; set; }
+        public bool CustomBarsToggled { get; set; } = true;
         public bool CBBlackBGToggled { get; set; }
 
         public bool ShowInfoBar { get; set; }
@@ -354,7 +360,6 @@ namespace ClassicUO.Configuration
         public bool WorldMapAllowPositionalTarget { get; set; } = true;
 
         public int AutoFollowDistance { get; set; } = 2;
-        public bool DisableAutoFollowAlt { get; set; } = false;
         [JsonConverter(typeof(Point2Converter))] public Point ResizeJournalSize { get; set; } = new Point(410, 350);
         public bool FollowingMode { get; set; } = false;
         public uint FollowingTarget { get; set; }
@@ -371,6 +376,10 @@ namespace ClassicUO.Configuration
         public bool CorpseSingleClickLoot { get; set; } = false;
 
         public bool DisableSystemChat { get; set; } = false;
+
+        public bool Sampler { get; set; } = true;
+
+        public bool Sway { get; set; } = true;
 
         #region GRID CONTAINER
         public bool UseGridLayoutContainerGumps { get; set; } = true;
@@ -481,9 +490,6 @@ namespace ClassicUO.Configuration
         public int OverheadChatFontSize { get; set; } = 20;
         public int OverheadChatWidth { get; set; } = 200;
 
-        public string NamePlateFont { get; set; } = "avadonian";
-        public int NamePlateFontSize { get; set; } = 20;
-
         public string DefaultTTFFont { get; set; } = "Roboto-Regular";
         public int TextBorderSize { get; set; } = 1;
 
@@ -496,7 +502,7 @@ namespace ClassicUO.Configuration
         public int HealthLineSizeMultiplier { get; set; } = 1;
 
         public bool OpenHealthBarForLastAttack { get; set; } = true;
-        [JsonConverter(typeof(Point2Converter))]
+        [JsonConverter(typeof(Point2Converter))] 
         public Point LastTargetHealthBarPos { get; set; } = Point.Zero;
         public ushort ToolTipBGHue { get; set; } = 0;
 
@@ -505,7 +511,7 @@ namespace ClassicUO.Configuration
         public int AdvancedSkillsGumpHeight { get; set; } = 310;
 
         #region ToolTip Overrides
-        public List<string> ToolTipOverride_SearchText { get; set; } = new List<string>() { "Physical Res", "Fire Resist", "Cold Resist", "Poison Resist", "Energy Resist" };
+        public List<string> ToolTipOverride_SearchText { get; set; } = new List<string>() { "Physical Res", "Fire Res", "Cold Res", "Poison Res", "Energy Res" };
         public List<string> ToolTipOverride_NewFormat { get; set; } = new List<string>() { "/c[#5f423c]Physical Resist {1}%", "/c[red]Fire Resist {1}%", "/c[blue]Cold Resist {1}%", "/c[green]Poison Resist {1}%", "/c[purple]Energy Resist {1}%" };
         public List<int> ToolTipOverride_MinVal1 { get; set; } = new List<int>() { -1, -1, -1, -1, -1 };
         public List<int> ToolTipOverride_MinVal2 { get; set; } = new List<int>() { -1, -1, -1, -1, -1 };
@@ -529,14 +535,14 @@ namespace ClassicUO.Configuration
 
         public static uint GumpsVersion { get; private set; }
 
-        [JsonConverter(typeof(Point2Converter))]
+        [JsonConverter(typeof(Point2Converter))] 
         public Point InfoBarSize { get; set; } = new Point(400, 20);
         public bool InfoBarLocked { get; set; } = false;
         public string InfoBarFont { get; set; } = "Roboto-Regular";
         public int InfoBarFontSize { get; set; } = 18;
 
         public int LastJournalTab { get; set; } = 0;
-        public Dictionary<string, MessageType[]> JournalTabs { get; set; } = new Dictionary<string, MessageType[]>()
+        public Dictionary<string, MessageType[]> JournalTabs { get; set; } = new Dictionary<string, MessageType[]>() 
         {
             { "All", new MessageType[] {
                 MessageType.Alliance, MessageType.Command, MessageType.Emote,
@@ -545,24 +551,24 @@ namespace ClassicUO.Configuration
                 MessageType.Regular, MessageType.Spell, MessageType.System,
                 MessageType.Whisper, MessageType.Yell, MessageType.ChatSystem }
             },
-            { "Chat", new MessageType[] {
-                MessageType.Regular,
-                MessageType.Guild,
-                MessageType.Alliance,
-                MessageType.Emote,
-                MessageType.Party,
-                MessageType.Whisper,
-                MessageType.Yell,
-                MessageType.ChatSystem }
+            { "Chat", new MessageType[] { 
+                MessageType.Regular, 
+                MessageType.Guild, 
+                MessageType.Alliance, 
+                MessageType.Emote, 
+                MessageType.Party, 
+                MessageType.Whisper, 
+                MessageType.Yell, 
+                MessageType.ChatSystem } 
             },
             {
-                "Guild|Party", new MessageType[] {
-                    MessageType.Guild,
-                    MessageType.Alliance,
+                "Guild|Party", new MessageType[] { 
+                    MessageType.Guild, 
+                    MessageType.Alliance, 
                     MessageType.Party }
             },
             {
-                "System", new MessageType[] {
+                "System", new MessageType[] { 
                     MessageType.System }
             }
         };
@@ -591,13 +597,6 @@ namespace ClassicUO.Configuration
 
         public bool UseLandTextures { get; set; } = false;
 
-        public double PaperdollScale { get; set; } = 1f;
-
-        public uint SOSGumpID { get; set; } = 1915258020;
-
-        public bool ModernPaperdollAnchorEnabled { get; set; } = false;
-        public bool JournalAnchorEnabled { get; set; } = false;
-        public bool EnableGumpCloseAnimation { get; set; } = true;
 
 
         public void Save(string path, bool saveGumps = true)
@@ -765,8 +764,6 @@ namespace ClassicUO.Configuration
 
                 if (root != null)
                 {
-                    int pdolc = 0;
-
                     foreach (XmlElement xml in root.ChildNodes /*.GetElementsByTagName("gump")*/)
                     {
                         if (xml.Name != "gump")
@@ -781,7 +778,7 @@ namespace ClassicUO.Configuration
                             int y = int.Parse(xml.GetAttribute(nameof(y)));
                             uint serial = uint.Parse(xml.GetAttribute(nameof(serial)));
 
-                            if (uint.TryParse(xml.GetAttribute("serverSerial"), out uint serverSerial))
+                            if(uint.TryParse(xml.GetAttribute("serverSerial"), out uint serverSerial))
                             {
                                 UIManager.SavePosition(serverSerial, new Point(x, y));
                             }
@@ -797,6 +794,12 @@ namespace ClassicUO.Configuration
                                         gump = new BuffGump(100, 100);
 
                                     break;
+
+                                // ## BEGIN - END ## tabgrid // PKRION
+                                case GumpType.TabGridGump:
+                                    gump = new TabGridGump();
+                                    break;
+                                // ## BEGIN - END ## // PKRION
 
                                 case GumpType.Container:
                                     gump = new ContainerGump();
@@ -826,9 +829,18 @@ namespace ClassicUO.Configuration
                                     break;
 
                                 case GumpType.Journal:
-                                    gump = new ResizableJournal();
-                                    //x = ProfileManager.CurrentProfile.JournalPosition.X;
-                                    //y = ProfileManager.CurrentProfile.JournalPosition.Y;
+                                    if (!ProfileManager.CurrentProfile.OldJournal)
+                                    {
+                                        gump = new ResizableJournal();
+                                        
+                                    }
+                                    else
+                                    {
+                                        gump = new JournalGump();
+                                    }
+                                    
+                                    x = ProfileManager.CurrentProfile.JournalPosition.X;
+                                    y = ProfileManager.CurrentProfile.JournalPosition.Y;
                                     break;
 
                                 case GumpType.MacroButton:
@@ -846,11 +858,6 @@ namespace ClassicUO.Configuration
                                     break;
 
                                 case GumpType.PaperDoll:
-                                    if (pdolc > 0)
-                                    {
-                                        break;
-                                    }
-
                                     if (ProfileManager.CurrentProfile.UseModernPaperdoll && serial == World.Player.Serial)
                                     {
                                         gump = new ModernPaperdoll(serial);
@@ -859,11 +866,10 @@ namespace ClassicUO.Configuration
                                     }
                                     else
                                     {
-                                        gump = new PaperDollGump(serial, serial == World.Player.Serial);
+                                        gump = new PaperDollGump();
                                         x = ProfileManager.CurrentProfile.PaperdollPosition.X;
                                         y = ProfileManager.CurrentProfile.PaperdollPosition.Y;
                                     }
-                                    pdolc++;
 
                                     break;
 

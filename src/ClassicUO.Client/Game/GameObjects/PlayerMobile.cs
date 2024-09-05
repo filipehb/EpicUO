@@ -30,21 +30,22 @@
 
 #endregion
 
-using ClassicUO.Assets;
+using System.Collections.Generic;
+using System.Linq;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Data;
 using ClassicUO.Game.Managers;
 using ClassicUO.Game.UI.Controls;
 using ClassicUO.Game.UI.Gumps;
+using ClassicUO.Assets;
 using ClassicUO.Network;
 using ClassicUO.Utility;
 using ClassicUO.Utility.Logging;
-using System.Collections.Generic;
-using System.Linq;
+using ClassicUO.Renderer;
 
 namespace ClassicUO.Game.GameObjects
 {
-    public class PlayerMobile : Mobile
+    internal class PlayerMobile : Mobile
     {
         private readonly Dictionary<BuffIconType, BuffIcon> _buffIcons = new Dictionary<BuffIconType, BuffIcon>();
 
@@ -269,9 +270,8 @@ namespace ClassicUO.Game.GameObjects
                 if (gump != null)
                     gump.AddBuff(new BuffIcon(type, graphic, time, text, title));
             }
-
-            EventSink.InvokeOnBuffAdded(null, new BuffEventArgs(_buffIcons[type]));
         }
+
 
         public bool IsBuffIconExists(BuffIconType graphic)
         {
@@ -280,12 +280,7 @@ namespace ClassicUO.Game.GameObjects
 
         public void RemoveBuff(BuffIconType graphic)
         {
-            if (_buffIcons.TryGetValue(graphic, out BuffIcon ev))
-            {
-                EventSink.InvokeOnBuffRemoved(null, new BuffEventArgs(ev));
-                _buffIcons.Remove(graphic);
-            }
-
+            _buffIcons.Remove(graphic);
             if (ProfileManager.CurrentProfile.UseImprovedBuffBar)
             {
                 ImprovedBuffGump gump = UIManager.GetGump<ImprovedBuffGump>();
@@ -1365,8 +1360,6 @@ namespace ClassicUO.Game.GameObjects
 
             TryOpenDoors();
             TryOpenCorpses();
-
-            EventSink.InvokeOnPositionChanged(this, new PositionChangedArgs(new Microsoft.Xna.Framework.Vector3(X, Y, Z)));
         }
 
         public void TryOpenCorpses()
@@ -1393,6 +1386,7 @@ namespace ClassicUO.Game.GameObjects
                 }
             }
         }
+
 
         protected override void OnDirectionChanged()
         {

@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 
 namespace ClassicUO.Game.Managers
 {
-    public class CoolDownBarManager
+    internal class CoolDownBarManager
     {
         private const int MAX_COOLDOWN_BARS = 15;
         private static CoolDownBar[] coolDownBars = new CoolDownBar[MAX_COOLDOWN_BARS];
 
         public CoolDownBarManager()
         {
-            EventSink.MessageReceived += MessageManager_MessageReceived;
+            MessageManager.MessageReceived += MessageManager_MessageReceived;
         }
 
         private void MessageManager_MessageReceived(object sender, MessageEventArgs e)

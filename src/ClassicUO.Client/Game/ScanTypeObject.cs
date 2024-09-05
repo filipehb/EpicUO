@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game
 {
-    public enum ScanTypeObject
+    internal enum ScanTypeObject
     {
         Hostile = 0,
         Party,

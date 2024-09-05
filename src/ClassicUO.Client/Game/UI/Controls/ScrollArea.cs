@@ -30,20 +30,20 @@
 
 #endregion
 
+using System;
 using ClassicUO.Input;
 using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
-using System;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public enum ScrollbarBehaviour
+    internal enum ScrollbarBehaviour
     {
         ShowWhenDataExceedFromView,
         ShowAlways
     }
 
-    public class ScrollArea : Control
+    internal class ScrollArea : Control
     {
         private bool _isNormalScroll;
         private readonly ScrollBarBase _scrollBar;
@@ -72,8 +72,7 @@ namespace ClassicUO.Game.UI.Controls
             {
                 _scrollBar = new ScrollFlag
                 {
-                    X = Width - 19,
-                    Height = h
+                    X = Width - 19, Height = h
                 };
 
                 Width += 15;
@@ -101,9 +100,11 @@ namespace ClassicUO.Game.UI.Controls
 
         public Rectangle ScissorRectangle;
 
-        public override void SlowUpdate()
+
+        public override void Update()
         {
-            base.SlowUpdate();
+            base.Update();
+
             CalculateScrollBarMaxValue();
 
             if (ScrollbarBehaviour == ScrollbarBehaviour.ShowAlways)
@@ -137,7 +138,7 @@ namespace ClassicUO.Game.UI.Controls
 
         public override bool Draw(UltimaBatcher2D batcher, int x, int y)
         {
-            ScrollBarBase scrollbar = (ScrollBarBase)Children[0];
+            ScrollBarBase scrollbar = (ScrollBarBase) Children[0];
             scrollbar.Draw(batcher, x + scrollbar.X, y + scrollbar.Y);
 
             if (batcher.ClipBegin(x + ScissorRectangle.X, y + ScissorRectangle.Y, Width - 14 + ScissorRectangle.Width, Height + ScissorRectangle.Height))
@@ -152,7 +153,7 @@ namespace ClassicUO.Game.UI.Controls
                     }
 
                     int finalY = y + child.Y - scrollbar.Value + ScissorRectangle.Y;
-
+                    
                     child.Draw(batcher, x + child.X, finalY);
                 }
 
@@ -161,6 +162,7 @@ namespace ClassicUO.Game.UI.Controls
 
             return true;
         }
+
 
         protected override void OnMouseWheel(MouseEventType delta)
         {

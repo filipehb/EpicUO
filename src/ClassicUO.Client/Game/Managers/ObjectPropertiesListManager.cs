@@ -33,15 +33,20 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using ClassicUO.Game.GameObjects;
 using ClassicUO.Game.UI.Controls;
 using ClassicUO.Network;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ClassicUO.Game.Managers
 {
-    public sealed class ObjectPropertiesListManager
+    internal sealed class ObjectPropertiesListManager
     {
         private readonly Dictionary<uint, ItemProperty> _itemsProperties = new Dictionary<uint, ItemProperty>();
+
+        public delegate void OPLOnReceiveEvent(OPLEventArgs args);
+        public event OPLOnReceiveEvent OPLOnReceive;
 
         public void Add(uint serial, uint revision, string name, string data, int namecliloc)
         {
@@ -57,7 +62,21 @@ namespace ClassicUO.Game.Managers
             prop.Data = data;
             prop.NameCliloc = namecliloc;
 
-            EventSink.InvokeOPLOnReceive(null, new OPLEventArgs(serial, name, data));
+            OPLOnReceive?.Invoke(new OPLEventArgs(serial, name, data));
+        }
+
+        public class OPLEventArgs : System.EventArgs
+        {
+            public readonly uint Serial;
+            public readonly string Name;
+            public readonly string Data;
+
+            public OPLEventArgs(uint serial, string name, string data)
+            {
+                Serial = serial;
+                Name = name;
+                Data = data;
+            }
         }
 
         public bool Contains(uint serial)
@@ -159,14 +178,14 @@ namespace ClassicUO.Game.Managers
         }
     }
 
-    public class ItemPropertiesData
+    internal class ItemPropertiesData
     {
         public readonly bool HasData = false;
-        public string Name = "";
+        public readonly string Name = "";
         public readonly string RawData = "";
         public readonly uint serial;
         public string[] RawLines;
-        public readonly Item item, itemComparedTo;
+        public readonly Item item, compareTo;
         public List<SinglePropertyData> singlePropertyData = new List<SinglePropertyData>();
 
         public ItemPropertiesData(Item item, Item compareTo = null)
@@ -174,7 +193,7 @@ namespace ClassicUO.Game.Managers
             if (item == null)
                 return;
             this.item = item;
-            itemComparedTo = compareTo;
+            this.compareTo = compareTo;
 
             serial = item.Serial;
             if (World.OPL.TryGetNameAndData(item.Serial, out Name, out RawData))
@@ -213,7 +232,7 @@ namespace ClassicUO.Game.Managers
                 singlePropertyData.Add(new SinglePropertyData(line));
             }
 
-            if(itemComparedTo != null)
+            if(compareTo != null)
             {
                 GenComparisonData();
             }
@@ -221,9 +240,9 @@ namespace ClassicUO.Game.Managers
 
         private void GenComparisonData()
         {
-            if(itemComparedTo == null) return;
+            if(compareTo == null) return;
 
-            ItemPropertiesData itemPropertiesData = new ItemPropertiesData(itemComparedTo);
+            ItemPropertiesData itemPropertiesData = new ItemPropertiesData(compareTo);
             if (itemPropertiesData.HasData)
             {
                 foreach (SinglePropertyData thisItem in singlePropertyData)
@@ -313,10 +332,10 @@ namespace ClassicUO.Game.Managers
 
         public class SinglePropertyData
         {
-            public string OriginalString;
-            public string Name = "";
-            public double FirstValue = -1;
-            public double SecondValue = -1;
+            public readonly string OriginalString;
+            public readonly string Name = "";
+            public readonly double FirstValue = -1;
+            public readonly double SecondValue = -1;
             public double FirstDiff = 0;
             public double SecondDiff = 0;
 

@@ -40,7 +40,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ClassicUO.Game.UI.Gumps
 {
-    public enum ANCHOR_TYPE
+    internal enum ANCHOR_TYPE
     {
         NONE,
         SPELL,
@@ -48,7 +48,7 @@ namespace ClassicUO.Game.UI.Gumps
         DISABLED
     }
 
-    public abstract class AnchorableGump : Gump
+    internal abstract class AnchorableGump : Gump
     {
         private AnchorableGump _anchorCandidate;
 

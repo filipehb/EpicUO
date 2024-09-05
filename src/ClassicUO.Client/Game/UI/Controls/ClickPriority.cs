@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public enum ClickPriority
+    internal enum ClickPriority
     {
         High,
         Default,

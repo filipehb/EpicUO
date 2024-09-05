@@ -30,6 +30,13 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using ClassicUO.Assets;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Data;
@@ -41,18 +48,11 @@ using ClassicUO.Renderer;
 using ClassicUO.Utility.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
 using static ClassicUO.Game.UI.Gumps.GridHightlightMenu;
 
 namespace ClassicUO.Game.UI.Gumps
 {
-    public class GridContainer : ResizableGump
+    internal class GridContainer : ResizableGump
     {
         #region CONSTANTS
         private const int X_SPACING = 1, Y_SPACING = 1;
@@ -83,9 +83,8 @@ namespace ClassicUO.Game.UI.Gumps
         private bool quickLootThisContainer = false;
         private bool? UseOldContainerStyle = null;
         private bool autoSortContainer = false;
-        private bool firstItemsLoaded = false;
 
-        private bool skipSave = false;
+        private readonly bool skipSave = false;
         private readonly ushort originalContainerItemGraphic;
 
         private GridScrollArea scrollArea;
@@ -117,15 +116,6 @@ namespace ClassicUO.Game.UI.Gumps
 
         #region public vars
         public readonly bool IsPlayerBackpack = false;
-
-        public GridSlotManager GetGridSlotManager { get { return gridSlotManager; } }
-
-        public List<Item> GetContents { get { return gridSlotManager.ContainerContents; } }
-
-        /// <summary>
-        /// Set to true to avoid saving the current grid slots.
-        /// </summary>
-        public bool SkipSave { get { return skipSave; } set { skipSave = value; } }
         #endregion
 
         public GridContainer(uint local, ushort originalContainerGraphic, bool? useGridStyle = null) : base(GetWidth(), GetHeight(), GetWidth(2), GetHeight(1), local, 0)
@@ -137,7 +127,7 @@ namespace ClassicUO.Game.UI.Gumps
             }
 
             #region SET VARS
-            isCorpse = container.IsCorpse || container.Graphic == 0x0009;
+            isCorpse = container.IsCorpse;
             if (useGridStyle != null)
                 UseOldContainerStyle = !useGridStyle;
 
@@ -164,6 +154,8 @@ namespace ClassicUO.Game.UI.Gumps
                     IsVisible = false;
                     Dispose();
                 }
+
+                AutoLootManager.Instance.HandleCorpse(container);
             }
 
             AnchorType = ProfileManager.CurrentProfile.EnableGridContainerAnchor ? ANCHOR_TYPE.NONE : ANCHOR_TYPE.DISABLED;
@@ -221,7 +213,7 @@ namespace ClassicUO.Game.UI.Gumps
                 "Ctrl + Click to lock an item in place\n" +
                 "Alt + Click to add an item to the quick move queue\n" +
                 "Shift + Click to add an item to your auto loot list\n" +
-                "Sort and single click looting can be enabled with the icons on the right side");
+                "Sort and single click looting can be enabled with the icons on thr right side");
 
             quickDropBackpack = new ResizableStaticPic(World.Player.FindItemByLayer(Layer.Backpack).DisplayedGraphic, 20, 20)
             {
@@ -487,31 +479,29 @@ namespace ClassicUO.Game.UI.Gumps
                 Dispose();
                 return;
             }
-            UpdateContainerName();
 
             if (autoSortContainer) overrideSort = true;
 
-            List<Item> sortedContents = (ProfileManager.CurrentProfile is null || ProfileManager.CurrentProfile.GridContainerSearchMode == 0) ? gridSlotManager.SearchResults(searchBox.Text) : GridSlotManager.GetItemsInContainer(container);
+            List<Item> sortedContents = ProfileManager.CurrentProfile.GridContainerSearchMode == 0 ? gridSlotManager.SearchResults(searchBox.Text) : GridSlotManager.GetItemsInContainer(container);
             gridSlotManager.RebuildContainer(sortedContents, searchBox.Text, overrideSort);
-
+            containerNameLabel.Text = GetContainerName();
+            if (container.Container != 0xFFFF_FFFF && FindContainer(container.Container, out GridContainer gridContainer))
+            {
+                gridContainer.UpdateContainerName();
+            }
             InvalidateContents = false;
         }
 
-        public static bool FindContainer(uint serial, out GridContainer? gridContainer) => (gridContainer = UIManager.GetGump<GridContainer>(serial)) != null;
+        public static bool FindContainer(uint serial, out GridContainer? gridContainer)
+        {
+            return (gridContainer = UIManager.GetGump<GridContainer>(serial)) == null ? false : true;
+        }
 
         protected override void UpdateContents()
         {
             if (InvalidateContents && !IsDisposed && IsVisible)
             {
                 UpdateItems();
-            }
-            if (!firstItemsLoaded)
-            {
-                firstItemsLoaded = true;
-                if (isCorpse)
-                {
-                    AutoLootManager.Instance.HandleCorpse(container);
-                }
             }
         }
 
@@ -578,7 +568,7 @@ namespace ClassicUO.Game.UI.Gumps
 
             Item item = container;
 
-            if (item is null || item.IsDestroyed)
+            if (item == null || item.IsDestroyed)
             {
                 Dispose();
                 return;
@@ -613,7 +603,6 @@ namespace ClassicUO.Game.UI.Gumps
                 setLootBag.Y = Height - 20;
                 if (IsPlayerBackpack)
                     ProfileManager.CurrentProfile.BackpackGridSize = new Point(Width, Height);
-
                 RequestUpdateContents();
             }
 
@@ -637,7 +626,7 @@ namespace ClassicUO.Game.UI.Gumps
             if (gridSlotManager != null)
             {
                 gridSlotManager.UpdateItems();
-                containerName += $" ({gridSlotManager.ContainerContents.Count})";
+                containerName += $" ({gridSlotManager.ItemPositions.Count})";
             }
 
             return containerName;
@@ -791,7 +780,7 @@ namespace ClassicUO.Game.UI.Gumps
             GridSaveSystem.Instance.Clear();
         }
 
-        public class GridItem : Control
+        private class GridItem : Control
         {
             private readonly HitBox hit;
             private bool mousePressedWhenEntered = false;
@@ -866,10 +855,6 @@ namespace ClassicUO.Game.UI.Gumps
                 background.Height = gridItemSize;
             }
 
-            /// <summary>
-            /// Set this grid slot's item. Set to null for empty slot.
-            /// </summary>
-            /// <param name="item"></param>
             public void SetGridItem(Item item)
             {
                 if (item == null)
@@ -1276,7 +1261,7 @@ namespace ClassicUO.Game.UI.Gumps
             }
         }
 
-        public class GridSlotManager
+        private class GridSlotManager
         {
             private Dictionary<int, GridItem> gridSlots = new Dictionary<int, GridItem>();
             private Item container;
@@ -1401,10 +1386,7 @@ namespace ClassicUO.Game.UI.Gumps
                     itemLocks.Add(gridSlots[slot].SlotItem);
             }
 
-            /// <summary>
-            /// Set the visual grid items to the current GridSlots dict
-            /// </summary>
-            public void SetGridPositions()
+            private void SetGridPositions()
             {
                 int x = X_SPACING, y = 0;
                 foreach (var slot in gridSlots)
@@ -1498,7 +1480,7 @@ namespace ClassicUO.Game.UI.Gumps
 
                     contents.Add(item);
                 }
-                return contents.OrderBy((x) => x.Graphic).ThenBy((x) => x.Hue).ToList();
+                return contents.OrderBy((x) => x.Graphic).ToList();
             }
 
             public int hcount = 0;

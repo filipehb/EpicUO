@@ -35,7 +35,7 @@ using System;
 namespace ClassicUO.Game.Data
 {
     [Flags]
-    public enum Flags : byte
+    internal enum Flags : byte
     {
         None,
         Frozen = 0x01,

@@ -30,6 +30,8 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using ClassicUO.Game.Managers;
 using ClassicUO.Game.UI.Controls;
 using ClassicUO.Input;
@@ -37,8 +39,6 @@ using ClassicUO.Network;
 using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
 
 namespace ClassicUO.Game.UI.Gumps
 {
@@ -93,9 +93,8 @@ namespace ClassicUO.Game.UI.Gumps
             _hit.MouseUp += TextureControlOnMouseUp;
 
             MenuButton menu = new MenuButton(25, Color.Black.PackedValue, 0.75f, "Menu") { X = width + 44 - 43, Y = 6 };
-
-            menu.MouseUp += (s, e) =>
-            {
+            
+            menu.MouseUp += (s, e) => {
                 menu.ContextMenu?.Show();
             };
             menu.ContextMenu = new ContextMenuControl();
@@ -118,29 +117,12 @@ namespace ClassicUO.Game.UI.Gumps
                     }
                 }
             }));
-            menu.ContextMenu.Add(new ContextMenuItemEntry("Add as marker on world map", () =>
-            {
+            menu.ContextMenu.Add(new ContextMenuItemEntry("Try to pathfind", () => {
                 if (foundMapLoc)
                 {
-                    WorldMapGump map = UIManager.GetGump<WorldMapGump>();
-                    if (map != null)
-                    {
-                        if (mapFacet != -1)
-                        {
-                            map.AddUserMarker("TMap", mapX, mapY, mapFacet);
-                        }
-                        else
-                            map.AddUserMarker("TMap", mapX, mapY, World.Map.Index);
-                    }
-                }
-            }));
-            menu.ContextMenu.Add(new ContextMenuItemEntry("Try to pathfind", () =>
-            {
-                if (foundMapLoc)
-                {
-                    int distance = Math.Max(Math.Abs(World.Player.X - mapX), Math.Abs(World.Player.Y - mapY));
+                    int distance =  Math.Max(Math.Abs(World.Player.X - mapX), Math.Abs(World.Player.Y - mapY));
 
-                    if (distance > 10)
+                    if(distance > 10)
                     {
                         GameActions.Print("You're too far away to try to pathfind, you need to be within 10 tiles.", 32);
                         return;
@@ -211,8 +193,8 @@ namespace ClassicUO.Game.UI.Gumps
                 //    multiplier = 0.666666666f;
                 //if (Width == 600)
                 //    multiplier = 2f;
-                if (CUOEnviroment.Debug)
-                    GameActions.Print($"Width: {Width}, Multiplier: {multiplier}, Facet: {mapFacet}, MapData: {mapX}, {mapY}, {mapEndX}, {mapEndY}");
+                    if (CUOEnviroment.Debug)
+                        GameActions.Print($"Width: {Width}, Multiplier: {multiplier}, Facet: {mapFacet}, MapData: {mapX}, {mapY}, {mapEndX}, {mapEndY}");
 
                 mapX = (int)(mapX + (x * multiplier));
                 mapY = (int)(mapY + (y * multiplier));
@@ -485,13 +467,11 @@ namespace ClassicUO.Game.UI.Gumps
             return result;
         }
 
-        public override void AfterDispose()
+        public override void Dispose()
         {
-            base.AfterDispose();
-            if (_hit != null)
-            {
-                _hit.MouseUp -= TextureControlOnMouseUp;
-            }
+            _hit.MouseUp -= TextureControlOnMouseUp;
+            _mapTexture?.Dispose();
+            base.Dispose();
         }
 
         private enum ButtonType

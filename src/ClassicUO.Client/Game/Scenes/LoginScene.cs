@@ -30,7 +30,13 @@
 
 #endregion
 
-using ClassicUO.Assets;
+using System;
+using System.IO;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
 using ClassicUO.Configuration;
 using ClassicUO.Game.Data;
 using ClassicUO.Game.GameObjects;
@@ -39,18 +45,13 @@ using ClassicUO.Game.UI.Gumps;
 using ClassicUO.Game.UI.Gumps.CharCreation;
 using ClassicUO.Game.UI.Gumps.Login;
 using ClassicUO.IO;
+using ClassicUO.Assets;
 using ClassicUO.Network;
 using ClassicUO.Network.Encryption;
 using ClassicUO.Resources;
 using ClassicUO.Utility;
 using ClassicUO.Utility.Logging;
 using Microsoft.Xna.Framework;
-using System;
-using System.IO;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
 
 namespace ClassicUO.Game.Scenes
 {
@@ -132,7 +133,7 @@ namespace ClassicUO.Game.Scenes
                         UIManager.Add(_currentGump = new LoginGump(this));
                     }
                 })
-                { X = 130, Y = 150 });
+                { X = 130, Y = 150});
             }
             else
             {
@@ -358,14 +359,7 @@ namespace ClassicUO.Game.Scenes
             {
                 Settings.GlobalSettings.Username = Account;
                 Settings.GlobalSettings.Password = Crypter.Encrypt(Password);
-                try
-                {
-                    Settings.GlobalSettings.Save();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
+                Settings.GlobalSettings.Save();
             }
 
             Log.Trace($"Start login to: {Settings.GlobalSettings.IP},{Settings.GlobalSettings.Port}");
@@ -963,7 +957,6 @@ namespace ClassicUO.Game.Scenes
     internal class ServerListEntry
     {
         private IPAddress _ipAddress;
-        private IPAddress _ipAddressLittleEndian;
         private Ping _pinger = new Ping();
         private bool _sending;
         private readonly bool[] _last10Results = new bool[10];
@@ -995,18 +988,6 @@ namespace ClassicUO.Game.Scenes
                         (byte) ((entry.Address >> 16) & 0xFF),
                         (byte) ((entry.Address >> 8) & 0xFF),
                         (byte) (entry.Address & 0xFF)
-                    }
-                );
-
-                // IP address in little-endian format, required for server ping
-                entry._ipAddressLittleEndian = new IPAddress
-                (
-                    new byte[]
-                    {
-                        (byte) (entry.Address & 0xFF),
-                        (byte) ((entry.Address >> 8) & 0xFF),
-                        (byte) ((entry.Address >> 16) & 0xFF),
-                        (byte) ((entry.Address >> 24) & 0xFF)
                     }
                 );
             }
@@ -1046,7 +1027,7 @@ namespace ClassicUO.Game.Scenes
                 {
                     _pinger.SendAsync
                     (
-                        _ipAddressLittleEndian,
+                        _ipAddress,
                         1000,
                         _buffData,
                         _pingOptions,

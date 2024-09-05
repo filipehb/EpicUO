@@ -35,7 +35,7 @@ using ClassicUO.Network;
 
 namespace ClassicUO.Game.Data
 {
-    public class PopupMenuData
+    internal class PopupMenuData
     {
         public PopupMenuData(uint serial, PopupMenuItem[] items)
         {

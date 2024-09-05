@@ -6,11 +6,15 @@ using ClassicUO.Game.Managers;
 using ClassicUO.Game.Scenes;
 using ClassicUO.Game.UI.Controls;
 using ClassicUO.Input;
+using ClassicUO.Network;
 using ClassicUO.Renderer;
+using ClassicUO.Renderer.Animations;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace ClassicUO.Game.UI.Gumps
@@ -34,11 +38,12 @@ namespace ClassicUO.Game.UI.Gumps
         public ModernPaperdoll(uint localSerial) : base(localSerial, 0)
         {
             UIManager.GetGump<MinimizedPaperdoll>()?.Dispose();
-            #region SET VARS
+            #region ASSIGN FIELDS
             AcceptMouseInput = true;
             CanMove = true;
             CanCloseWithRightClick = true;
-            AnchorType = ProfileManager.CurrentProfile.ModernPaperdollAnchorEnabled ? ANCHOR_TYPE.NONE : ANCHOR_TYPE.DISABLED;
+            #endregion
+            #region SET VARS
             Width = WIDTH;
             Height = HEIGHT;
             GroupMatrixHeight = Height;
@@ -220,7 +225,6 @@ namespace ClassicUO.Game.UI.Gumps
         public void UpdateOptions()
         {
             backgroundImage.Hue = ProfileManager.CurrentProfile.ModernPaperDollHue;
-            AnchorType = ProfileManager.CurrentProfile.ModernPaperdollAnchorEnabled ? ANCHOR_TYPE.NONE : ANCHOR_TYPE.DISABLED;
             foreach (var layerSlot in itemLayerSlots)
             {
                 layerSlot.Value.UpdateOptions();

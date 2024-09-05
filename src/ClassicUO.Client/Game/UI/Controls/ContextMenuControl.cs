@@ -30,17 +30,17 @@
 
 #endregion
 
+using System;
+using System.Collections.Generic;
 using ClassicUO.Game.Managers;
 using ClassicUO.Game.UI.Gumps;
 using ClassicUO.Input;
 using ClassicUO.Renderer;
 using Microsoft.Xna.Framework;
-using System;
-using System.Collections.Generic;
 
 namespace ClassicUO.Game.UI.Controls
 {
-    public class ContextMenuControl
+    internal class ContextMenuControl
     {
         private readonly List<ContextMenuItemEntry> _items;
 
@@ -92,7 +92,7 @@ namespace ClassicUO.Game.UI.Controls
         }
     }
 
-    public class ContextMenuItemEntry
+    internal sealed class ContextMenuItemEntry
     {
         public ContextMenuItemEntry(string text, Action action = null, bool canBeSelected = false, bool defaultValue = false)
         {
@@ -115,7 +115,7 @@ namespace ClassicUO.Game.UI.Controls
     }
 
 
-    public class ContextMenuShowMenu : Gump
+    internal class ContextMenuShowMenu : Gump
     {
         private readonly AlphaBlendControl _background;
         private List<ContextMenuShowMenu> _subMenus;
@@ -169,11 +169,6 @@ namespace ClassicUO.Game.UI.Controls
             if (Y + _background.Height > Client.Game.Window.ClientBounds.Height)
             {
                 Y = Client.Game.Window.ClientBounds.Height - _background.Height;
-            }
-
-            if (Y < Client.Game.Window.ClientBounds.Y)
-            {
-                Y = 0;
             }
 
             foreach (ContextMenuItem mitem in FindControls<ContextMenuItem>())
@@ -312,7 +307,7 @@ namespace ClassicUO.Game.UI.Controls
                     _label.Width = Width;
                 }
 
-                if (_selectedPic != null)
+                if(_selectedPic != null)
                 {
                     _selectedPic.IsVisible = _entry.IsSelected;
                 }

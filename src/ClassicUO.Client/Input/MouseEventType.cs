@@ -32,7 +32,7 @@
 
 namespace ClassicUO.Input
 {
-    public enum MouseEventType
+    internal enum MouseEventType
     {
         Move,
         Down,
